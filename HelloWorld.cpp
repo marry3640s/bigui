@@ -1,0 +1,431 @@
+/*
+ * Copyright 2017 Google Inc.
+ *
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+ //#include "HelloWorld.h"
+#include "example/HelloWorld.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkGraphics.h"
+#include "include/core/SkImage.h"
+#include "include/core/SkSurface.h"
+#include "include/core/SkTime.h"
+#include "include/effects/SkDashPathEffect.h"
+#include "include/effects/SkGradientShader.h"
+#include "example/xml/tinyxml2.h"
+#include "windows.h"
+//HWND hwnd;
+RollImage* roll;
+using namespace sk_app;
+using namespace tinyxml2;
+
+ActionManage* gActionManage;
+GameTimerManage* gTimerManage;
+std::vector<UIWidget*> gWidgetList;
+Application* Application::Create(int argc, char** argv, void* platformData) {
+	gActionManage = new ActionManage();
+	gTimerManage = new GameTimerManage();
+	gWidgetList.clear();
+	return new HelloWorld(argc, argv, platformData);
+
+	// std::max();
+}
+
+
+ListView* view;
+SkPoint rightpoint[24] = { {490, 40},   {613, 40},   {736, 40},   {859, 40},   {982, 40},
+						  {1105, 40},  {1105, 114}, {1105, 188}, {1105, 262}, {1105, 336},
+						  {1105, 410}, {1105, 483}, {982, 483},  {859, 483},  {736, 483},
+						  {613, 483},  {490, 483},  {367, 483},  {367, 410},  {367, 336},
+						  {367, 262},  {367, 188},  {367, 114},  {367, 40} };
+long long llLastStamp;
+
+
+
+
+
+
+
+
+
+
+void HelloWorld::TestScrollView() {
+	char pszTest[32][32] = { "very goods",
+							"hello world",
+							"miss",
+							"SogouWBIpunt",
+							"skscalar",
+							"button",
+							"client",
+							"press",
+							"oleacc",
+							"winine.dll" };
+	ScrollView* sview = new ScrollView();
+	char pszPath[256];
+
+	int nLine = 5000;
+	for (int j = 0; j < nLine; j++) {
+		for (int k = 0; k < 3; k++) {
+			StaticText* text;
+			if (k == 0) {
+				sprintf_s(pszPath, 256, "%d", j + 1);
+				text = new StaticText(pszPath);
+			}
+			else
+				text = new StaticText(pszTest[k]);
+
+			text->SetTag(j * 3 + k);
+			// but->SetText(pszTest[k]);
+			text->SetSize(100, 25);
+			text->SetPosition(100 * k, j * 25);
+
+			sview->AddChild(text);
+		}
+		// but->SetUiEventCallBack(std::bind(&HelloWorld::ClickCallback, this,
+		// std::placeholders::_1));
+	}
+
+	// sview->SetDirection(ScrollView::Direction::Horizontal);
+	sview->SetPosition(100, 200);
+	sview->SetSize(580, 580);
+	sview->SetContentSize(1024, nLine * 25);
+	// sview->JumpBottom();
+	this->AddWidget(sview);
+}
+
+void HelloWorld::TestListView() {
+	Button* but = new Button();
+	but->SetText("test listview");
+	but->SetPosition(100, 50);
+	but->SetSize(120, 25);
+	this->AddWidget(but);
+	but->SetMouseEventCallBack(std::bind(
+		&HelloWorld::ClickCallback, this, std::placeholders::_1, std::placeholders::_2));
+
+	char pszTest[32][32] = { "very goods",
+							"hello world",
+							"miss",
+							"SogouWBIpunt",
+							"skscalar",
+							"button",
+							"client",
+							"press",
+							"oleacc",
+							"winine.dll" };
+
+	char pszTitel[32][32] = { "num",
+							 "probetcd_helloworld",
+							 "memory",
+							 "pid",
+							 "cpu",
+							 "username",
+							 "statues",
+							 "spec",
+							 "odbc",
+							 "myserver" };
+	view = new ListView();
+	for (int k = 0; k < 2; k++) view->AddCol(pszTitel[k % 11], 100);
+	char pszPath[256];
+
+	int nLine = 2000000;//671088-671125
+	for (int j = 0; j < nLine; j++) {
+
+
+		for (int k = 0; k < 2; k++) {
+			StaticText* text;
+			if (k == 0) {
+				sprintf_s(pszPath, 256, "%d", j + 1);
+				text = new StaticText(pszPath);
+			}
+			else
+				text = new StaticText(pszTest[k % 11]);
+
+			view->AddCellItem(text, j, k);
+		}
+		// but->SetUiEventCallBack(std::bind(&HelloWorld::ClickCallback, this,
+		// std::placeholders::_1));
+	}
+
+	// sview->SetDirection(ScrollView::Direction::Horizontal);
+	view->SetPosition(100, 100);
+	view->SetSize(500, 500);
+	view->SetViewStyle(15);
+	view->SetSelectedCellItemBackGround(SkColorSetRGB(85, 150, 150));
+	view->SetSortCol(0);
+	// sview->JumpBottom();
+	this->AddWidget(view);
+}
+char* G2U2(const char* gb2312)
+{
+	int len = MultiByteToWideChar(CP_ACP, 0, gb2312, -1, NULL, 0);
+	wchar_t* wstr = new wchar_t[len + 1];
+	memset(wstr, 0, len + 1);
+	MultiByteToWideChar(CP_ACP, 0, gb2312, -1, wstr, len);
+	len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
+	char* str = new char[len + 1];
+	memset(str, 0, len + 1);
+	WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
+	if (wstr) delete[] wstr;
+	return str;
+}
+
+void HelloWorld::TestTextField() {
+	pField = new TextField();
+	pField->SetPosition(0, 0);
+	pField->SetSize(fWindow->width(), fWindow->height());
+	//pField->SetSize(100, TEXT_HEIGHT*3/*-5*/);
+	this->AddWidget(pField);
+	//return;
+
+	FILE *fp;
+	char str[8192];
+
+	/* 打开用于读取的文件 */
+	//fp = fopen("C:\\bighouse\\44.txt", "r");
+	fp = fopen("C:\\bighouse\\55.txt", "r");
+	//fp = fopen("C:\\bighouse\\77.txt", "r");
+	//fp = fopen("C:\\bighouse\\老虎证券利率分析.txt", "r");
+	if (fp == NULL) {
+		return;
+	}
+	int k = 0;
+	//644-650
+	while(fgets(str, 8192, fp) != NULL &&k<60000) {
+		/* 向标准输出 stdout 写入内容 */
+		//puts(str);
+		char *pText=G2U2(str);
+		textline info;
+		info.nHeight = TEXT_HEIGHT;
+		info.txtbuf = pText;
+		pField->insertline(info);
+		delete pText;
+		k++;
+	}
+	fclose(fp);
+}
+
+void HelloWorld::Init() {
+	this->KillTimer(timer_sel(HelloWorld::Init));
+	/*TcpClient *pClient = new TcpClient(this);
+	pClient->Connect("192.168.0.226", 13056);*/
+	// InitUi();
+}
+
+void HelloWorld::ClickCallback(UIWidget* pWidget, MouseEvent ev) {
+}
+HelloWorld::HelloWorld(int argc, char** argv, void* platformData)
+	: fBackendType(Window::kNativeGL_BackendType), fRotationAngle(0) {
+	SkGraphics::Init();
+	fLinePaint.setColor(SK_ColorGRAY);
+	fLinePaint.setAntiAlias(true);
+
+	fRectPaint.setColor(DEFAULT_CURSOR_COLOR);
+	fRectPaint.setStyle(SkPaint::kStroke_Style);
+	fRectPaint.setStrokeWidth(2);
+	fRectPaint.setAntiAlias(true);
+	 fNextTime = -DBL_MAX;
+	fXY = SkPoint::Make(0, 0);
+	fSize = SkSize::Make(0, 0);
+	fBlink = true;
+	fWindow = Window::CreateNativeWindow(platformData);
+	fWindow->setRequestedDisplayParams(DisplayParams());
+	pField = NULL;
+	/*Sequence sq = Sequence(0, [&]() {
+		fBlink = !fBlink;
+	}, new DelayTime(1.0), 0);
+
+	Repeat re = Repeat(p, &se, 3, 0);
+	sq.RunSequence();*/
+	// Window_win* pwin = (Window_win*)fWindow;
+	// hwnd=pwin->GetWindowHwnd();
+	// register callbacks
+	fWindow->pushLayer(this);
+
+	fWindow->attach(fBackendType);
+
+	
+	// InitUi();
+	 // TestScrollView();
+	 // TestListView();
+	TestTextField();
+
+	AllocConsole();
+	AttachConsole(GetCurrentProcessId());
+	freopen("CON", "w", stdout);
+
+	return;
+
+	// this->SetTimer(std::bind(&HelloWorld::TestTimer, this), 10);
+	// TimerCallBackFun p2 = static_cast<TimerCallBackFun>(&HelloWorld::TestTimer);
+	/*this->SetTimer(timer_sel(HelloWorld::TestTimer), 2);
+	this->SetTimer(timer_sel(HelloWorld::TestTimer2), 5);*/
+
+	// TestListView();
+
+	/*Button *but = new Button();
+	but->SetText(pszTest[0]);
+	but->SetSize(80, 17);
+	but->SetPosition(100, 100);
+	this->AddWidget(but);
+	but->SetUiEventCallBack(std::bind(&HelloWorld::ClickCallback, this, std::placeholders::_1));*/
+
+	/*char pszPath[256];
+	sprintf_s(pszPath, 256, "G:\\0.png");
+	Sprite *p = new Sprite(pszPath);
+	this->AddWidget(p);
+	p->SetPosition(300, 300);
+
+	p->SetAnchorPoint(SkPoint::Make(0.8, 0.8));
+	RotateTo *ro = new RotateTo(2, 360);
+	p->RunAction(ro);*/
+
+	// Repeat re = Repeat(p, ro, 3, 0);
+	/*MoveTo *to = new MoveTo(2, 800, 500);
+	p->RunAction(to);*/
+	// p->RunAction(new DelayTime(10.2, [&](void){
+	//	  printf("kkkkk\n");
+	//	//  this->KillTimer(timer_sel(HelloWorld::TestTimer));
+	//   }
+	//));
+
+	// this->RunAction(new DelayTime(18, [&](void) {
+	//	printf("jjjjj\n");
+	//	this->KillTimer(timer_sel(HelloWorld::TestTimer2));
+	// }
+	//));
+
+	// new Sequence(p, de, pBlink, 0);
+
+	// Blink *pBlink = new Blink(2, 2);
+	// DelayTime *de = new DelayTime(2);
+
+	// Sequence se =  Sequence(p, [&](void) {
+	//	printf("kkkkk222222\n");
+	//	this->KillTimer(timer_sel(HelloWorld::TestTimer));
+	//},pBlink,de,0);
+
+	// Sequence se=Sequence(p,0,ro, de, pBlink,0);
+	//   Repeat re = Repeat(p, &se, 3, 0);
+	//	se.RunSequence();
+
+	// p->RunAction(pBlink);
+
+	//
+	// p->RunAction(de);
+	// p->SetOpacity(0.2);
+	// p->SetScaleY(3);
+}
+
+HelloWorld::~HelloWorld() {
+	fWindow->detach();
+	delete fWindow;
+}
+
+void HelloWorld::updateTitle() {
+	if (!fWindow || fWindow->sampleCount() <= 1) {
+		return;
+	}
+
+	SkString title("Hello World ");
+	title.append(Window::kRaster_BackendType == fBackendType ? "Raster" : "OpenGL");
+	fWindow->setTitle(title.c_str());
+}
+
+void HelloWorld::onBackendCreated() {
+	if (fWindow == 0) return;
+	this->updateTitle();
+	fWindow->show();
+	fWindow->inval();
+}
+int nPaintTick = 0;
+long long llInitStamp;
+void HelloWorld::onPaint(SkSurface* surface) {
+	auto canvas = surface->getCanvas();
+	canvas->clear(SK_ColorWHITE);
+
+	//if (fBlink) {
+	//	canvas->drawRect(SkRect::MakeXYWH(fXY.fX+100, fXY.fY+100, DEFAULT_CURSOR_WIDTH, 20/*fSize.fHeight*/), fRectPaint);
+	//}
+	//else {
+	//	//canvas->drawLine(fXY + xy, fXY + xy + SkPoint::Make(1, fSize.fHeight), fLinePaint);
+	//}
+	//return;
+
+	DrawAllWidget(canvas);
+	if (nPaintTick == 0) {
+		llInitStamp = GetTickCount64();
+	}
+	if (nPaintTick % 60 == 0 && nPaintTick != 0) {
+		long long lstamp = (GetTickCount64() - llInitStamp);
+	//	printf("time stamp=%lld,每秒能处理%d帧\n", lstamp, 60 * 1000 / lstamp);
+		llInitStamp = GetTickCount64();
+		// long long nPaintTick=GetTickCount64();
+	}
+	nPaintTick++;
+	return;
+}
+
+void HelloWorld::onIdle() {
+	double now = SkTime::GetNSecs();
+	if (now >= fNextTime) {
+		constexpr double kHalfPeriodNanoSeconds = 0.5 * 1e9;
+		fNextTime = now + kHalfPeriodNanoSeconds;
+		fBlink = !fBlink;
+		fWindow->inval();
+	}
+	// Just re-paint continously
+	fWindow->inval();
+}
+
+bool HelloWorld::onKey(skui::Key key, skui::InputState state, skui::ModifierKey modifiers) {
+	if (state != skui::InputState::kDown) {
+		return false;
+	}
+	OnKey(key, (uint32_t)modifiers);
+	return true;
+}
+
+bool HelloWorld::onChar(SkUnichar c, skui::ModifierKey modifiers) {
+	OnChar(c, (uint32_t)modifiers);
+	return true;
+}
+
+// bool HelloWorld::onChar(SkUnichar c, skui::ModifierKey modifiers) {
+//	if (' ' == c) {
+//		fBackendType = Window::kRaster_BackendType == fBackendType ? Window::kNativeGL_BackendType
+//			: Window::kRaster_BackendType;
+//		fWindow->detach();
+//		fWindow->attach(fBackendType);
+//	}
+//	return true;
+//}
+
+bool HelloWorld::onMouse(int x, int y, skui::InputState state, skui::ModifierKey modifiers) {
+	if (skui::InputState::kDown == state) {
+		OnMouseDown(x, y);
+	}
+	else if (skui::InputState::kMove == state) {
+		OnMouseMove(x, y);
+	}
+	else if (skui::InputState::kUp == state) {
+		OnMouseUp(x, y);
+	}
+	return true;
+}
+
+bool HelloWorld::onMouseWheel(float delta, skui::ModifierKey modifiers) {
+	OnMouseWheel(delta, (uint32_t)modifiers);
+	return true;
+}
+
+void HelloWorld::onResize(int width, int height)
+{
+	if (pField != 0)
+	{
+		pField->SetPosition(0, 0);
+		pField->SetSize(width, height);
+	}
+}

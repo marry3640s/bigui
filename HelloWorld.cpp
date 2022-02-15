@@ -16,7 +16,8 @@
 #include "include/effects/SkDashPathEffect.h"
 #include "include/effects/SkGradientShader.h"
 #include "example/xml/tinyxml2.h"
-#include "windows.h"
+//#include "windows.h"
+#include "tools/sk_app/win/Window_win.h"
 //HWND hwnd;
 RollImage* roll;
 using namespace sk_app;
@@ -33,7 +34,7 @@ Application* Application::Create(int argc, char** argv, void* platformData) {
 
 	// std::max();
 }
-
+HWND hwnd;
 
 ListView* view;
 SkPoint rightpoint[24] = { {490, 40},   {613, 40},   {736, 40},   {859, 40},   {982, 40},
@@ -185,15 +186,16 @@ void HelloWorld::TestTextField() {
 
 	/* 打开用于读取的文件 */
 	//fp = fopen("C:\\bighouse\\44.txt", "r");
-	fp = fopen("C:\\bighouse\\55.txt", "r");
+	//fp = fopen("C:\\bighouse\\55.txt", "r");
 	//fp = fopen("C:\\bighouse\\77.txt", "r");
-	//fp = fopen("C:\\bighouse\\老虎证券利率分析.txt", "r");
+//	fp = fopen("C:\\bighouse\\老虎证券利率分析.txt", "r");
+	fp = fopen("C:\\bighouse\\22.txt", "r");
 	if (fp == NULL) {
 		return;
 	}
 	int k = 0;
 	//644-650
-	while(fgets(str, 8192, fp) != NULL &&k<60000) {
+	while(fgets(str, 8192, fp) != NULL /*&&k<60000*/) {
 		/* 向标准输出 stdout 写入内容 */
 		//puts(str);
 		char *pText=G2U2(str);
@@ -204,6 +206,10 @@ void HelloWorld::TestTextField() {
 		delete pText;
 		k++;
 	}
+	/*textline info;
+	info.nHeight = TEXT_HEIGHT;
+	info.txtbuf = "";
+	pField->insertline(info);*/
 	fclose(fp);
 }
 
@@ -232,7 +238,10 @@ HelloWorld::HelloWorld(int argc, char** argv, void* platformData)
 	fBlink = true;
 	fWindow = Window::CreateNativeWindow(platformData);
 	fWindow->setRequestedDisplayParams(DisplayParams());
+	Window_win *ww = (Window_win*)fWindow;
 	pField = NULL;
+	hwnd = ww->GetWindowHwnd();
+	/*SetCapture(ww->GetWindowHwnd());*/
 	/*Sequence sq = Sequence(0, [&]() {
 		fBlink = !fBlink;
 	}, new DelayTime(1.0), 0);
@@ -405,6 +414,7 @@ bool HelloWorld::onChar(SkUnichar c, skui::ModifierKey modifiers) {
 
 bool HelloWorld::onMouse(int x, int y, skui::InputState state, skui::ModifierKey modifiers) {
 	if (skui::InputState::kDown == state) {
+		SetCapture(hwnd);
 		OnMouseDown(x, y);
 	}
 	else if (skui::InputState::kMove == state) {
@@ -412,6 +422,7 @@ bool HelloWorld::onMouse(int x, int y, skui::InputState state, skui::ModifierKey
 	}
 	else if (skui::InputState::kUp == state) {
 		OnMouseUp(x, y);
+		ReleaseCapture();
 	}
 	return true;
 }

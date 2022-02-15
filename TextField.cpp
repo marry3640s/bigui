@@ -41,7 +41,7 @@ TextField::TextField()
 	font.setTypeface(SkTypeface::MakeFromName("simsun", SkFontStyle::Normal()));
 	memset(&inspos, 0x00, sizeof(inspos));
 	memset(chinachar, 0x00, sizeof(chinachar));
-
+	bSelFlag = false;
 	/*if (line.size() == 0)
 	{
 		textline info;
@@ -64,6 +64,109 @@ void TextField::insertline(textline info)
 	line.push_back(info);
 }
 
+int TextField::DrawSelRect(SkCanvas* surfaceCanvas,int nLine)
+{
+	SkRect rect;
+	TextPoint first, sec;
+	if (bSelFlag == false)
+		return false;
+	memcpy(&first, &selinfo.init, sizeof(TextPoint));
+	memcpy(&sec, &selinfo.end, sizeof(TextPoint));
+	/*if (selinfo.end.y > selinfo.init.y)
+	{
+		memcpy(&first, &selinfo.init, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.end, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y < selinfo.init.y)
+	{
+		memcpy(&first, &selinfo.end, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y == selinfo.init.y && selinfo.end.x > selinfo.init.x)
+	{
+		memcpy(&first, &selinfo.init, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.end, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y == selinfo.init.y && selinfo.end.x == selinfo.init.x)
+	{
+		memcpy(&first, &selinfo.end, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y == selinfo.init.y && selinfo.end.x < selinfo.init.x)
+	{
+		memcpy(&first, &selinfo.end, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+	}
+	else
+	{
+		printf("gggg\n");
+	}*/
+	int ins_y =  nLine* TEXT_HEIGHT+ ContentInfo.offs_y;
+	int ins_x = ContentInfo.offs_x;
+	//printf("ins_x=%d\n", ins_x);
+	SkPaint sel;
+	sel.setColor(SK_ColorYELLOW);
+	/*SkPaint sel;
+	sel.setColor(SK_ColorYELLOW);
+	surfaceCanvas->drawRect(SkRect{ 8, 0, 16, TEXT_HEIGHT }, sel);*/
+	char *text = line[nLine].txtbuf.data();
+	SkPaint paint;
+	SkRect bounds;
+	SkScalar nextwidth = 0;
+
+	if (first.y == nLine)
+	{
+		
+		if (first.y == sec.y)
+		{
+			SkScalar width = font.measureText(text, first.x, SkTextEncoding::kUTF8, &bounds, &paint);
+			nextwidth = font.measureText(text, sec.x, SkTextEncoding::kUTF8, &bounds, &paint);
+			surfaceCanvas->drawRect(SkRect{ width+ ins_x, (SkScalar)ins_y, nextwidth+ ins_x, (SkScalar)ins_y + TEXT_HEIGHT }, sel);
+		}
+		////向上滚动
+		else if (first.y > sec.y)
+		{
+			SkScalar width = font.measureText(text, first.x, SkTextEncoding::kUTF8, &bounds, &paint);
+			nextwidth = font.measureText(text, first.x , SkTextEncoding::kUTF8, &bounds, &paint);
+			surfaceCanvas->drawRect(SkRect{ (SkScalar)(0 + ins_x), (SkScalar)ins_y, nextwidth + ins_x, (SkScalar)ins_y + TEXT_HEIGHT }, sel);
+		}
+		////向下滚动
+		else if (first.y < sec.y)
+		{
+			SkScalar width = font.measureText(text, first.x, SkTextEncoding::kUTF8, &bounds, &paint);
+			nextwidth = font.measureText(text, strlen(text), SkTextEncoding::kUTF8, &bounds, &paint);
+			surfaceCanvas->drawRect(SkRect{ width + ins_x, (SkScalar)ins_y, nextwidth + ins_x, (SkScalar)ins_y + TEXT_HEIGHT }, sel);
+		}
+	}
+	else if ((nLine > first.y && nLine < sec.y) || (nLine>sec.y && nLine<first.y))
+	{
+		nextwidth = font.measureText(text, strlen(text), SkTextEncoding::kUTF8, &bounds, &paint);
+		surfaceCanvas->drawRect(SkRect{ (SkScalar)(0 + ins_x), (SkScalar)ins_y, nextwidth + ins_x, (SkScalar)ins_y + TEXT_HEIGHT }, sel);
+	}
+	else if (sec.y==nLine)
+	{
+		////向上滚动
+		if (first.y > sec.y)
+		{
+			SkScalar width = font.measureText(text, sec.x, SkTextEncoding::kUTF8, &bounds, &paint);
+			nextwidth = font.measureText(text, strlen(text), SkTextEncoding::kUTF8, &bounds, &paint);
+			//SkScalar width = font.measureText(text, sec.x, SkTextEncoding::kUTF8, &bounds, &paint);;
+			surfaceCanvas->drawRect(SkRect{ width + ins_x, (SkScalar)ins_y, nextwidth + ins_x, (SkScalar)ins_y + TEXT_HEIGHT }, sel);
+		}
+		////向下滚动
+		else if (first.y < sec.y)
+		{
+			SkScalar width = font.measureText(text, sec.x, SkTextEncoding::kUTF8, &bounds, &paint);;
+			surfaceCanvas->drawRect(SkRect{ (SkScalar)(0 + ins_x), (SkScalar)ins_y, width + ins_x, (SkScalar)ins_y + TEXT_HEIGHT }, sel);
+		}
+	}
+
+
+	
+
+	return true;
+}
+
 void TextField::Draw(SkCanvas* canvas) 
 {
 	ContentInfo.offs_y = GetScrolloffsY();
@@ -81,8 +184,9 @@ void TextField::Draw(SkCanvas* canvas)
     surfaceCanvas->drawRect(SkRect{0, 0, GetWidth(), GetHeight()}, paint);
 
    
-	
-
+	SkPaint sel;
+	sel.setColor(SK_ColorYELLOW);
+	//surfaceCanvas->drawRect(SkRect{ -28, 0,-20, TEXT_HEIGHT }, sel);
 	int nIndex = (-ContentInfo.offs_y) / TEXT_HEIGHT;
 
 	int ins_y = TEXT_HEIGHT- (-ContentInfo.offs_y)% TEXT_HEIGHT;
@@ -99,6 +203,8 @@ void TextField::Draw(SkCanvas* canvas)
 	SkScalar fDisplayWidth = 0;
 	for (int k = nIndex; k < line.size(); k++)
 	{
+		//if (GetMouseDragged())
+		DrawSelRect(surfaceCanvas, k);
 		paint.setColor(SkColorSetRGB(0, 0, 0));
 		//char *text = G2U(line[k].txtbuf.data());
 		char *text = line[k].txtbuf.data();
@@ -213,6 +319,46 @@ void TextField::OnMouseMove(int x, int y)
 		vert_bar->OnMouseMove(x, y);
     if (hori_bar != NULL && hori_bar->IsVisible()) 
 		hori_bar->OnMouseMove(x, y);
+
+	if (GetMouseDragged())
+	{
+
+		//selinfo.init
+		bSelFlag = true;
+		SkPoint point = ScrollViewToChildPoint(x, y);
+		selinfo.end.y=  (point.y() + (-GetScrolloffsY())) / TEXT_HEIGHT;
+		selinfo.end.y = std::max(0, selinfo.end.y);
+		selinfo.end.y = std::min(selinfo.end.y, (int)line.size()-1);
+		selinfo.end.x = GetMouseXCharOffset(point.x());
+		inspos.x = selinfo.end.x;
+		inspos.y = selinfo.end.y;
+		printf("init:%d,%d end:%d,%d,x=%d,y=%d\n",selinfo.init.x,selinfo.init.y,selinfo.end.x,selinfo.end.y,x,y);
+
+		if ((inspos.y+2)*TEXT_HEIGHT + GetScrolloffsY() > GetDisplayHeigth())
+		{
+			ScrollToPosition(vert_bar, -(-GetScrolloffsY() + TEXT_HEIGHT*3));
+		}
+		else if (inspos.y*TEXT_HEIGHT + GetScrolloffsY()<0)
+		{
+			ScrollToPosition(vert_bar, -(-GetScrolloffsY() - TEXT_HEIGHT * 3));
+		}
+
+		if (selinfo.end.y == selinfo.init.y)
+		{
+			printf("curX=%f,%f\n", GetCursorX(), GetScrolloffsX());
+			if (GetCursorX()-30 < 0  )
+			{
+				ScrollToPosition(hori_bar, -(-GetScrolloffsX() - 50));
+			}
+			if (GetCursorX() + 50 >= GetDisplayWidth())
+			{
+				ScrollToPosition(hori_bar, -(-GetScrolloffsX() + 50));
+			}
+		}
+
+		
+
+	}
 }
 
 
@@ -243,8 +389,33 @@ FontInfoEach TextField::GetFontWidthForLineIndex(int nIndex)
 	//info.ch_width= bounds.width();
 	return info;
 }
-//#include "modules/skplaintexteditor/src/shape.h"
-//using namespace SkPlainTextEditor;
+
+int TextField::GetMouseXCharOffset(int point_x)
+{
+	int k = 1;
+	int inx = 0;
+	FontInfoEach info;
+	SkScalar pp = point_x - GetScrolloffsX();
+	int nOffset=0;
+	for (;;)
+	{
+		info = GetFontWidthForLineIndex(k);
+		if (pp < info.total_width || k >= line[inspos.y].txtbuf.size())
+		{
+			inx = info.nNextIndex - 1;
+			break;
+		}
+		k = info.nNextIndex;
+	}
+	if (pp > info.total_width - info.ch_width / 2) //偏移向右，指向下一个
+		nOffset = inx;
+	else
+		nOffset = inx - (info.nNextIndex - k);
+
+	nOffset = std::min(nOffset, (int)line[inspos.y].txtbuf.size());
+	return nOffset;
+}
+
 void TextField::OnMouseDown(int x, int y) 
 {
 
@@ -276,66 +447,31 @@ void TextField::OnMouseDown(int x, int y)
 	printf("%d,%f\n", inspos.y+1, GetScrolloffsY());
 	//const char* fLocale = "en";
 	//ShapeResult result = Shape(line[inspos.y].txtbuf.data(), line[inspos.y].txtbuf.size(),font, fLocale, GetDisplayWidth());
-
-	int k = 1;
-	int inx=0;
-	FontInfoEach info;
-	SkScalar pp = point.x() - GetScrolloffsX();
-	for (;;)
-	{
-	    info=GetFontWidthForLineIndex(k);
-		if (pp < info.total_width || k >= line[inspos.y].txtbuf.size())
-		{
-			inx = info.nNextIndex - 1;
-			break;
-		}
-		k = info.nNextIndex;
-	}
-	if (pp > info.total_width - info.ch_width / 2) //偏移向右，指向下一个
-		inspos.x = inx;
-	else
-		inspos.x = inx-(info.nNextIndex-k);
-
-	inspos.x = std::min(inspos.x, (int)line[inspos.y].txtbuf.size());
+	inspos.x = GetMouseXCharOffset(point.x());
 	
-	//int ret = 0;
-	//char *text = line[inspos.y].txtbuf.data();
-	//int nTemp = 0;
-	////he你好
-	//k = 1;
-	//for (;;)
-	//{
-	//	nTemp = 0;
-	//	for (;;)
-	//	{
-	//		nTemp++;
-	//		ret = font.measureText(line[inspos.y].txtbuf.data(), k, SkTextEncoding::kUTF8, &bounds, &paint);
-	//		int cc = text[0];
-	//		cc = cc & 0x000000ff;
-	//		if (ret > 0 || k >= line[inspos.y].txtbuf.size() || (k == 0 && cc < 0x80))
-	//			break;
-	//		k++;
-
-	//	}
-	//	if (point.x() < bounds.width()+GetScrolloffsX() )
-	//		break;
-	//	if (k >= line[inspos.y].txtbuf.size())
-	//	{
-	//		nTemp = 0;
-	//		break;
-	//	}
-	//	k++;
-	//}
-
-	//inspos.x = k-nTemp;
-	//inspos.x = std::min(inspos.x, (int)line[inspos.y].txtbuf.size());
+	//if(bSelFlag==false)
+	bSelFlag = false;
+	if (GetMouseDragged() == false)
+	{
+		selinfo.init.x = inspos.x;
+		selinfo.init.y = inspos.y;
+	}
+	SetMouseDragged(true);
+	
+	
   
 }
 
 void TextField::OnMouseUp(int x, int y) 
 {
-    if (x < GetBound().left() || x > GetBound().right() || y < GetBound().top() ||y > GetBound().bottom())
-        return ;
+	/*if (GetMouseDragged() == true)
+	{
+		inspos.x=selinfo.end.x;
+		inspos.y = selinfo.end.y;
+	}*/
+	SetMouseDragged(false);
+   /* if (x < GetBound().left() || x > GetBound().right() || y < GetBound().top() ||y > GetBound().bottom())
+        return ;*/
     if (vert_bar != NULL && vert_bar->IsVisible())
 	{
         vert_bar->OnMouseUp(x, y);
@@ -344,6 +480,7 @@ void TextField::OnMouseUp(int x, int y)
 	{
         hori_bar->OnMouseUp(x, y);
     }
+	
 }
 
 void TextField::OnMouseWheel(float delta, uint32_t modifier) 
@@ -619,6 +756,14 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 		if (/*((unsigned)c < 0x7F && */(unsigned)c >= 0x20 || c == 0x000A || c==0x000D || c==0x0009 ) {
 			
 			insertChar(c);
+		}
+		else if (c == 03) //ctrl-c
+		{
+
+		}
+		else if (c == 16)//ctrl-v
+		{
+
 		}
 	}
 

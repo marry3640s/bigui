@@ -18,6 +18,13 @@ struct TextPoint {
 };
 
 
+struct SelTextInfo
+{
+	TextPoint init;
+	TextPoint begin;
+	TextPoint end;
+};
+
 
 struct textline {
 	std::string  txtbuf;
@@ -52,7 +59,9 @@ public:
 	SkScalar GetCursorX();//获取当前光标的X位置
 	SkScalar GetCursorY();//获取当前光标的Y位置
 
-	
+    int GetMouseXCharOffset(int x);
+
+	int DrawSelRect(SkCanvas* canvas,int nLine);
 
 	FontInfoEach GetFontWidthForLineIndex(int nIndex);
 
@@ -71,6 +80,14 @@ public:
         point.set(x - GetBound().left(), y - GetBound().top());
         return point;
     }
+	void SetMouseDragged(bool bValue) {
+		bMouseDragged = bValue;
+	}
+
+	bool GetMouseDragged()
+	{
+		return bMouseDragged;
+	}
 
 private:
     // std::deque<TextDesc> textlist;
@@ -78,6 +95,8 @@ private:
     ScrollBar* hori_bar;
 	ScrollContentInfo ContentInfo;
     SkColor text_color;
+
+	SelTextInfo selinfo;
 
     std::deque<textline> line;
     // std::wstring textlist;
@@ -92,6 +111,9 @@ private:
 	bool bBlink;
 	SkFont font;
 	double fNextTime;
+
+	bool bMouseDragged;
+	bool bSelFlag;
     // SkString
 };
 

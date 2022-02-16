@@ -579,6 +579,66 @@ void TextField::OnMouseWheel(float delta, uint32_t modifier)
     ScrollToPosition(vert_bar, GetScrolloffsY() + delta * 20);
 }
 
+void TextField::TextSelDel()
+{
+	TextPoint first, sec;
+	if (selinfo.end.y > selinfo.init.y)
+	{
+		memcpy(&first, &selinfo.init, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.end, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y < selinfo.init.y)
+	{
+		memcpy(&first, &selinfo.end, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y == selinfo.init.y && selinfo.end.x > selinfo.init.x)
+	{
+		memcpy(&first, &selinfo.init, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.end, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y == selinfo.init.y && selinfo.end.x == selinfo.init.x)
+	{
+		memcpy(&first, &selinfo.end, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y == selinfo.init.y && selinfo.end.x < selinfo.init.x)
+	{
+		memcpy(&first, &selinfo.end, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+	}
+
+	std::string cptext;
+	char *pText;
+	int nIdx = 0;
+	for (int k = first.y; k <= sec.y; k++)
+	{
+		if (k == first.y)
+		{
+			line[k].txtbuf.erase(first.x, line[k].txtbuf.size()-first.x);
+		
+		}
+		else if (k == sec.y)
+		{
+			line[k-nIdx].txtbuf.erase(0, sec.x);
+
+			int temp = line[first.y].txtbuf.size();
+			line[first.y].txtbuf.insert(temp, line[k - nIdx].txtbuf.data(), line[k - nIdx].txtbuf.size());
+			line[k - nIdx].txtbuf.erase();
+			line.erase(line.begin() + k - nIdx);
+		}
+		else
+		{
+			//删除整行
+			line[k - nIdx].txtbuf.erase();
+			line.erase(line.begin() + k - nIdx);
+			nIdx++;
+		}
+	}
+	inspos.x = first.x;
+	inspos.y = first.y;
+	bSelFlag = false;
+}
 void TextField::OnKey(skui::Key key, uint32_t modifiers) {
 	skui::ModifierKey modi = (skui::ModifierKey)modifiers;
 	using sknonstd::Any;
@@ -688,8 +748,12 @@ void TextField::OnKey(skui::Key key, uint32_t modifiers) {
 
 		else if (key == skui::Key::kBack)
 		{
+			if (bSelFlag == true)
+			{
+				TextSelDel();
+			}
 
-			if (inspos.x == 0)
+			else if (inspos.x == 0)
 			{
 				if (inspos.y > 0)
 				{

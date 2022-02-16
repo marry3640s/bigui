@@ -67,6 +67,7 @@ public:
 
 	void insertChar(SkUnichar c);
 	void insertline(textline);
+	void TextSelDel();
 
    // int FindSuitX(std::wstring text, int nCmpX);
    

@@ -188,7 +188,7 @@ void HelloWorld::TestTextField() {
 	//fp = fopen("C:\\bighouse\\44.txt", "r");
 	//fp = fopen("C:\\bighouse\\55.txt", "r");
 	//fp = fopen("C:\\bighouse\\77.txt", "r");
-//	fp = fopen("C:\\bighouse\\老虎证券利率分析.txt", "r");
+	//fp = fopen("C:\\bighouse\\老虎证券利率分析.txt", "r");
 	fp = fopen("C:\\bighouse\\22.txt", "r");
 	if (fp == NULL) {
 		return;

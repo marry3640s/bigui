@@ -82,17 +82,17 @@ void ScrollBar::OnMouseMove(int x, int y)
 	{
 		if (nDirectionType == Direction::Vertical)
 		{
-			if (x >= thumbrect.left() - 80 && x <= thumbrect.right() + 80 && y >= thumbrect.top()-80 && y <= thumbrect.bottom()+80)
+			/*if (x >= thumbrect.left() - 80 && x <= thumbrect.right() + 80 && y >= thumbrect.top()-80 && y <= thumbrect.bottom()+80)
 				thumbst = ThumbStatu::MousePressedStatu;
 			else
-				return;
+				return;*/
 		}
 		else if (nDirectionType == Direction::Horizontal)
 		{
-			if (x >= thumbrect.left()-50&& x <= thumbrect.right()+50  && y >= thumbrect.top()-50 && y <= thumbrect.bottom()+50)
+			/*if (x >= thumbrect.left()-50&& x <= thumbrect.right()+50  && y >= thumbrect.top()-50 && y <= thumbrect.bottom()+50)
 				thumbst = ThumbStatu::MousePressedStatu;
 			else
-				return;
+				return;*/
 		}
 	}
 
@@ -102,6 +102,8 @@ void ScrollBar::OnMouseMove(int x, int y)
 	    if(nDirectionType==Direction::Vertical)
 		    nMousePos=y;
 		thumbst=ThumbStatu::MousePressedStatu;
+
+		//GetScrollBarController()->ScrollToPosition(this,);
 		int thumb_move =  mouse_offset-nMousePos;
 		//printf("thumb_y2=%d\n",nMousePos);
 	    GetScrollBarController()->ScrollToPosition(this,thumb_move*barinfo.ContentSize/barinfo.DisplaySize);

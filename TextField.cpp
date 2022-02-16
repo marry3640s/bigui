@@ -17,6 +17,94 @@ char* G2U(const char* gb2312)
 	return str;
 }
 
+std::string UnicodeToANSI(const std::wstring& str)
+{
+	char*  pElementText;
+	int    iTextLen;
+	// 宽字节转多字节
+	iTextLen = WideCharToMultiByte(CP_ACP, 0,
+		str.c_str(),
+		-1,
+		nullptr,
+		0,
+		nullptr,
+		nullptr);
+
+	pElementText = new char[iTextLen + 1];
+	memset((void*)pElementText, 0, sizeof(char) * (iTextLen + 1));
+	::WideCharToMultiByte(CP_ACP,
+		0,
+		str.c_str(),
+		-1,
+		pElementText,
+		iTextLen,
+		nullptr,
+		nullptr);
+
+	std::string strText;
+	strText = pElementText;
+	delete[] pElementText;
+	return strText;
+}
+
+std::wstring AnsiToUNICODE(const std::string& str)
+{
+	wchar_t*  pElementText;
+	int    iTextLen;
+	// 宽字节转多字节
+	iTextLen = MultiByteToWideChar(CP_ACP, 0,
+		str.c_str(),
+		-1,
+		nullptr,
+		0);
+
+	pElementText = new wchar_t[iTextLen + 1];
+	memset((void*)pElementText, 0, sizeof(char) * (iTextLen + 1));
+	::MultiByteToWideChar(CP_ACP,
+		0,
+		str.c_str(),
+		-1,
+		pElementText,
+		iTextLen);
+
+	std::wstring strText;
+	strText = pElementText;
+	delete[] pElementText;
+	return strText;
+}
+
+std::string UnicodeToUTF8(LPCWSTR lpszWideStr)
+{
+	int nLen = ::WideCharToMultiByte(CP_UTF8, 0, lpszWideStr, -1,
+		nullptr, 0, nullptr, nullptr);
+
+	char* buffer = new char[nLen + 1];
+	::ZeroMemory(buffer, nLen + 1);
+
+	::WideCharToMultiByte(CP_UTF8, 0, lpszWideStr, -1,
+		buffer, nLen, nullptr, nullptr);
+
+	std::string multStr = buffer;
+	delete[] buffer;
+	return multStr;
+}
+
+std::wstring Utf8ToUnicode(const std::string& str)
+{
+	int nLen = ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(),
+		nullptr, 0);
+
+	WCHAR* buffer = new WCHAR[nLen + 1];
+	::ZeroMemory(buffer, sizeof(WCHAR)* (nLen + 1));
+
+	::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(),
+		buffer, nLen);
+
+	std::wstring wideStr = buffer;
+	delete[] buffer;
+	return wideStr;
+}
+
 TextField::TextField() 
 {
     SetBackGroundColor(SkColorSetRGB(230, 230, 230));
@@ -322,7 +410,8 @@ void TextField::OnMouseMove(int x, int y)
 
 	if (GetMouseDragged())
 	{
-
+		if (line.size() == 0)
+			return;
 		//selinfo.init
 		bSelFlag = true;
 		SkPoint point = ScrollViewToChildPoint(x, y);
@@ -346,7 +435,7 @@ void TextField::OnMouseMove(int x, int y)
 		if (selinfo.end.y == selinfo.init.y)
 		{
 			printf("curX=%f,%f\n", GetCursorX(), GetScrolloffsX());
-			if (GetCursorX()-30 < 0  )
+			if (GetCursorX()-30 < 0  && GetScrolloffsX()<0)
 			{
 				ScrollToPosition(hori_bar, -(-GetScrolloffsX() - 50));
 			}
@@ -759,11 +848,165 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 		}
 		else if (c == 03) //ctrl-c
 		{
+			if (bSelFlag == true)
+			{
+				TextPoint first, sec;
+				if (selinfo.end.y > selinfo.init.y)
+				{
+					memcpy(&first, &selinfo.init, sizeof(TextPoint));
+					memcpy(&sec, &selinfo.end, sizeof(TextPoint));
+				}
+				else if (selinfo.end.y < selinfo.init.y)
+				{
+					memcpy(&first, &selinfo.end, sizeof(TextPoint));
+					memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+				}
+				else if (selinfo.end.y == selinfo.init.y && selinfo.end.x > selinfo.init.x)
+				{
+					memcpy(&first, &selinfo.init, sizeof(TextPoint));
+					memcpy(&sec, &selinfo.end, sizeof(TextPoint));
+				}
+				else if (selinfo.end.y == selinfo.init.y && selinfo.end.x == selinfo.init.x)
+				{
+					memcpy(&first, &selinfo.end, sizeof(TextPoint));
+					memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+				}
+				else if (selinfo.end.y == selinfo.init.y && selinfo.end.x < selinfo.init.x)
+				{
+					memcpy(&first, &selinfo.end, sizeof(TextPoint));
+					memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+				}
+				std::string cptext;
+				char *pText;
+				for (int k = first.y; k <= sec.y; k++)
+				{
+					
+					//将utf8转为ansi
+					/*std::wstring un = Utf8ToUnicode(line[k].txtbuf.data());
+					std::string an = UnicodeToANSI(un);
+					pText = an.data();*/
+					if (k == first.y)
+					{
+						std::string tt = line[k].txtbuf.data()+first.x;
+						std::wstring un = Utf8ToUnicode(tt);
+						std::string an = UnicodeToANSI(un);
+						pText = an.data();
+						cptext.insert(0, pText, strlen(pText));
+					}
+					else if (k == sec.y)
+					{
+						std::string tt = line[k].txtbuf.data() ;
+						tt.resize(sec.x);
+						std::wstring un = Utf8ToUnicode(tt);
+						std::string an = UnicodeToANSI(un);
+						pText = an.data();
+						cptext.insert(cptext.size(), pText, strlen(pText));
+					}
+					else
+					{
+						std::wstring un = Utf8ToUnicode(line[k].txtbuf.data());
+						std::string an = UnicodeToANSI(un);
+						pText = an.data();
+						cptext.insert(cptext.size(), pText, strlen(pText));
+					}
+					cptext.insert(cptext.size(),1, 0x0a);
+				}
 
+				if (!OpenClipboard(NULL))
+					return;
+				EmptyClipboard();
+
+				// Allocate a global memory object for the text.
+				HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, cptext.size()+1);
+				if (hglbCopy == NULL)
+				{
+					CloseClipboard();
+					return;
+				}
+
+				// Lock the handle and copy the text to the buffer.
+				unsigned char *lpucharCopy = (unsigned char *)GlobalLock(hglbCopy);
+				memcpy(lpucharCopy, cptext.data(), cptext.size());
+				lpucharCopy[cptext.size()] = 0;    // null character
+
+				GlobalUnlock(hglbCopy);
+
+				// Place the handle on the clipboard.
+				SetClipboardData(CF_TEXT, hglbCopy);
+				CloseClipboard();
+			}
 		}
-		else if (c == 16)//ctrl-v
+		else if (c == 0x16)//ctrl-v
 		{
+			if (OpenClipboard(NULL))//打开剪贴板  
+			{
+				if (IsClipboardFormatAvailable(CF_TEXT))//判断格式是否是我们所需要  
+				{
+					HANDLE hClip;
+					char* pBuf;
 
+					//读取数据  
+					hClip = GetClipboardData(CF_TEXT);
+					char *pData = (char*)GlobalLock(hClip);
+					pBuf = G2U(pData);
+					
+					std::string text;
+					int nAddLine=0;
+					for (int k = 0; k < strlen(pBuf); k++)
+					{
+						if (pBuf[k] == 0x0d || pBuf[k]==0x0a)
+						{
+							if (nAddLine == 0)
+							{
+								if (line.size() == 0)
+								{
+									textline info;
+									info.nHeight = TEXT_HEIGHT;
+									line.push_back(info);
+								}
+								line[inspos.y].txtbuf.insert(inspos.x, text.data(), text.size());
+								inspos.x += text.size();
+							}
+							else
+							{
+								
+								textline info;
+								info.nHeight = TEXT_HEIGHT;
+							
+								info.txtbuf = text;
+								line.insert(line.begin() + inspos.y + 1, info);
+								inspos.y += 1;
+								inspos.x = text.size();
+							}
+							text.clear();
+							if (pBuf[k] == 0x0d && pBuf[k + 1] == 0x0a)
+								k++;
+							if (k >= strlen(pBuf))
+								break;
+							k++;
+							if (k >= strlen(pBuf))
+								break;
+							nAddLine++;
+						}
+						text.insert(text.size(), 1, pBuf[k]);
+					}
+					if (text.size() > 0)
+					{
+						textline info;
+						info.nHeight = TEXT_HEIGHT;
+						info.txtbuf = text;
+						line.insert(line.begin() + inspos.y + 1, info);
+						inspos.y += 1;
+						inspos.x = text.size();
+					}
+					delete pBuf;
+
+					/*std::wstring un = Utf8ToUnicode(line[k].txtbuf.data());
+					std::string an = UnicodeToANSI(un);*/
+					GlobalUnlock(hClip); 
+					CloseClipboard();
+				}
+			}
 		}
 	}
 

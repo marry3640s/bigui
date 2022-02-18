@@ -21,7 +21,6 @@ struct TextPoint {
 struct SelTextInfo
 {
 	TextPoint init;
-	TextPoint begin;
 	TextPoint end;
 };
 

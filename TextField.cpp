@@ -910,7 +910,22 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 			
 			insertChar(c);
 		}
-		else if (c == 03) //ctrl-c
+		else if (c == 01) //ctrl-a  全选
+		{
+			if (line.size() > 0)
+			{
+				selinfo.init.x = 0;
+				selinfo.init.y = 0;
+				selinfo.end.x = line[line.size() - 1].txtbuf.size();
+				selinfo.end.y = line.size()-1;
+				bSelFlag = true;
+				ScrollToPosition(vert_bar, -(ContentInfo.height - GetDisplayHeigth()));//滚动到尾部
+				inspos.x = selinfo.end.x;
+				inspos.y = selinfo.end.y;
+			}
+
+		}
+		else if (c == 03) //ctrl-c 复制
 		{
 			if (bSelFlag == true)
 			{
@@ -1016,7 +1031,8 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 					
 					std::string text;
 					int nAddLine=0;
-					for (int k = 0; k < strlen(pBuf); k++)
+					int nBufLen = strlen(pBuf);
+					for (int k = 0; k < nBufLen; k++)
 					{
 						if (pBuf[k] == 0x0d || pBuf[k]==0x0a)
 						{
@@ -1038,20 +1054,23 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 								info.nHeight = TEXT_HEIGHT;
 							
 								info.txtbuf = text;
-								line.insert(line.begin() + inspos.y + 1, info);
-								inspos.y += 1;
+								//line.insert(line.begin() + inspos.y + 1, info);
+								line.push_back(info);
+								inspos.y = line.size() - 1;
 								inspos.x = text.size();
 							}
+						
 							text.clear();
 							if (pBuf[k] == 0x0d && pBuf[k + 1] == 0x0a)
 								k++;
-							if (k >= strlen(pBuf))
+							if (k >= nBufLen)
 								break;
 							k++;
-							if (k >= strlen(pBuf))
+							if (k >= nBufLen)
 								break;
 							nAddLine++;
 						}
+	
 						text.insert(text.size(), 1, pBuf[k]);
 					}
 					if (text.size() > 0)
@@ -1059,8 +1078,8 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 						textline info;
 						info.nHeight = TEXT_HEIGHT;
 						info.txtbuf = text;
-						line.insert(line.begin() + inspos.y + 1, info);
-						inspos.y += 1;
+						line.push_back(info);
+						inspos.y = line.size() - 1;
 						inspos.x = text.size();
 					}
 					delete pBuf;

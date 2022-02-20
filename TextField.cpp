@@ -130,6 +130,7 @@ TextField::TextField()
 	memset(&inspos, 0x00, sizeof(inspos));
 	memset(chinachar, 0x00, sizeof(chinachar));
 	bSelFlag = false;
+	ResetCurUndo();
 	/*if (line.size() == 0)
 	{
 		textline info;
@@ -546,6 +547,14 @@ void TextField::OnMouseDown(int x, int y)
 		selinfo.init.y = inspos.y;
 	}
 	SetMouseDragged(true);
+
+	/*if (!(cur_undo.ins_begin.x == inspos.x || cur_undo.ins_begin.y == inspos.y))
+	{
+		undo.push(cur_undo);
+		ResetCurUndo();
+	}*/
+
+
 	
 	
   
@@ -578,7 +587,86 @@ void TextField::OnMouseWheel(float delta, uint32_t modifier)
 		return;
     ScrollToPosition(vert_bar, GetScrolloffsY() + delta * 20);
 }
+void TextField::PushCurUndeSelDel()
+{
+	TextPoint first, sec;
+	if (selinfo.end.y > selinfo.init.y)
+	{
+		memcpy(&first, &selinfo.init, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.end, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y < selinfo.init.y)
+	{
+		memcpy(&first, &selinfo.end, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y == selinfo.init.y && selinfo.end.x > selinfo.init.x)
+	{
+		memcpy(&first, &selinfo.init, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.end, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y == selinfo.init.y && selinfo.end.x == selinfo.init.x)
+	{
+		memcpy(&first, &selinfo.end, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+	}
+	else if (selinfo.end.y == selinfo.init.y && selinfo.end.x < selinfo.init.x)
+	{
+		memcpy(&first, &selinfo.end, sizeof(TextPoint));
+		memcpy(&sec, &selinfo.init, sizeof(TextPoint));
+	}
 
+	std::string cptext;
+	char *pText;
+	int nIdx = 0;
+	for (int k = first.y; k <= sec.y; k++)
+	{
+		if (k == first.y)
+		{
+
+			//line[k].txtbuf.erase(first.x, line[k].txtbuf.size() - first.x);
+			if (first.y != sec.y)
+			{
+				cptext.insert(cptext.size(), line[k].txtbuf.data() + first.x, line[k].txtbuf.size() - first.x);
+				cptext.push_back(0x0a);
+			}
+			else
+			{
+				cptext.insert(cptext.size(), line[k].txtbuf.data() + first.x, sec.x - first.x);
+			}
+			 
+
+		}
+		else if (k == sec.y)
+		{
+
+			cptext.insert(cptext.size(), line[k].txtbuf.data(), sec.x);
+			/*line[k - nIdx].txtbuf.erase(0, sec.x);
+
+			int temp = line[first.y].txtbuf.size();
+			line[first.y].txtbuf.insert(temp, line[k - nIdx].txtbuf.data(), line[k - nIdx].txtbuf.size());
+			line[k - nIdx].txtbuf.erase();
+			line.erase(line.begin() + k - nIdx);*/
+		}
+		else
+		{
+			cptext.insert(cptext.size(), line[k].txtbuf.data(), line[k].txtbuf.size());
+			cptext.push_back(0x0a);
+			//删除整行
+			/*line[k - nIdx].txtbuf.erase();
+			line.erase(line.begin() + k - nIdx);
+			nIdx++;*/
+		}
+		//std::reverse(cptext.begin(), cptext.end());
+		//cur_undo.text.insert(0,cptext.data(),cptext.size());
+	
+		//cptext.clear();
+	}
+	std::reverse(cptext.begin(), cptext.end());
+	cur_undo.text = cptext;
+	cur_undo.ins_end.x = first.x;
+	cur_undo.ins_end.y = first.y;
+}
 void TextField::TextSelDel()
 {
 	TextPoint first, sec;
@@ -615,7 +703,10 @@ void TextField::TextSelDel()
 	{
 		if (k == first.y)
 		{
-			line[k].txtbuf.erase(first.x, line[k].txtbuf.size()-first.x);
+			if(first.y!=sec.y)
+			   line[k].txtbuf.erase(first.x, line[k].txtbuf.size()-first.x);
+			else
+				line[k].txtbuf.erase(first.x, sec.x - first.x);
 		
 		}
 		else if (k == sec.y)
@@ -748,8 +839,21 @@ void TextField::OnKey(skui::Key key, uint32_t modifiers) {
 
 		else if (key == skui::Key::kBack)
 		{
+			if (!(cur_undo.ins_end.x == inspos.x && cur_undo.ins_end.y == inspos.y) && cur_undo.state != UndoState::None)
+			{
+				undo.push(cur_undo);
+				ResetCurUndo();
+			}
+			if (cur_undo.text.size() == 0)
+			{
+				cur_undo.ins_begin.x = inspos.x;
+				cur_undo.ins_begin.y = inspos.y;
+			}
+			cur_undo.state = UndoState::Del;
+			
 			if (bSelFlag == true)
 			{
+				PushCurUndeSelDel();
 				TextSelDel();
 			}
 
@@ -769,11 +873,15 @@ void TextField::OnKey(skui::Key key, uint32_t modifiers) {
 					{
 						ScrollToPosition(vert_bar, -(-GetScrolloffsY() - TEXT_HEIGHT));
 					}
+					cur_undo.text.push_back(0x0a);//
 				}
+				cur_undo.ins_end.x = inspos.x;
+				cur_undo.ins_end.y = inspos.y;
 				return;
 			}
 			else
 			{
+				cur_undo.text.push_back(line[inspos.y].txtbuf[inspos.x - 1]);
 				line[inspos.y].txtbuf.erase(inspos.x - 1, 1);
 				inspos.x--;
 				SkPaint paint;
@@ -787,11 +895,15 @@ void TextField::OnKey(skui::Key key, uint32_t modifiers) {
 						ret = font.measureText(line[inspos.y].txtbuf.data(), inspos.x, SkTextEncoding::kUTF8, &bounds, &paint);
 						if (ret > 0 || inspos.x == 0)
 							break;
+						cur_undo.text.push_back(line[inspos.y].txtbuf[inspos.x - 1]);
 						line[inspos.y].txtbuf.erase(inspos.x - 1, 1);
 						inspos.x--;
 					}
 				}
+				cur_undo.ins_end.x = inspos.x;
+				cur_undo.ins_end.y = inspos.y;
 			}
+		
 			
 		}
 	}
@@ -799,13 +911,40 @@ void TextField::OnKey(skui::Key key, uint32_t modifiers) {
     
 }
 
+void TextField::ResetCurUndo()
+{
+	cur_undo.text.clear();
+	cur_undo.state = UndoState::None;
+	memset(&cur_undo.ins_begin, 0x00, sizeof(TextPoint));
+	memset(&cur_undo.ins_end, 0x00, sizeof(TextPoint));
+}
 
-
+void TextField::CheckUndo()
+{
+	if (cur_undo.text.size() > 0)
+	{
+		undo.push(cur_undo);
+		ResetCurUndo();
+	}
+}
 //插入文字
 void TextField::insertChar(SkUnichar c)
 {
 	if (c == (SkUnichar)skui::Key::kBack)
 		return;
+	if (!(cur_undo.ins_end.x == inspos.x && cur_undo.ins_end.y == inspos.y) && cur_undo.state!= UndoState::None)
+	{
+		undo.push(cur_undo);
+		ResetCurUndo();
+	}
+	if (cur_undo.text.size() == 0)
+	{
+		//cur_undo.state = UndoState::Inster;
+		cur_undo.ins_begin.x = inspos.x;
+		cur_undo.ins_begin.y = inspos.y;
+	}
+	
+
 	if (line.size() == 0)
 	{
 		textline info;
@@ -888,6 +1027,11 @@ void TextField::insertChar(SkUnichar c)
 			ScrollToPosition(hori_bar, -(-GetScrolloffsX() + 60));
 		}
 	}
+	cur_undo.state = UndoState::Inster;
+	cur_undo.text.push_back(c);
+	cur_undo.ins_end.x = inspos.x;
+	cur_undo.ins_end.y = inspos.y;
+	
 }
 
 
@@ -909,6 +1053,101 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 		if (/*((unsigned)c < 0x7F && */(unsigned)c >= 0x20 || c == 0x000A || c==0x000D || c==0x0009 ) {
 			
 			insertChar(c);
+		}
+		else if (c == 26)  //ctrl-z undo
+		{
+			if (undo.size() == 0 || cur_undo.state!= UndoState::None)
+			{
+				if (cur_undo.text.size() > 0)
+				{
+					undo.push(cur_undo);
+					ResetCurUndo();
+				}
+			}
+			if (undo.size() > 0)
+			{
+				undoInfo info=undo.top();
+				if (info.state == UndoState::Inster)
+				{
+					selinfo.init.x = info.ins_begin.x;
+					selinfo.init.y = info.ins_begin.y;
+					selinfo.end.x = info.ins_end.x;
+					selinfo.end.y = info.ins_end.y;
+					TextSelDel();
+				}
+				else if (info.state == UndoState::Del)
+				{
+					std::reverse(info.text.begin(), info.text.end());
+					char *pBuf = info.text.data();
+					std::string text;
+					int nAddLine = 0;
+					int nBufLen = strlen(pBuf);
+					inspos.x = info.ins_end.x;
+					inspos.y = info.ins_end.y;
+					std::string temp;
+					for (int k = 0; k < nBufLen; k++)
+					{
+						if (pBuf[k] == 0x0d || pBuf[k] == 0x0a)
+						{
+							if (nAddLine == 0)
+							{
+								if (line.size() == 0)
+								{
+									textline info;
+									info.nHeight = TEXT_HEIGHT;
+									line.push_back(info);
+								}
+								line[inspos.y].txtbuf.insert(inspos.x, text.data(), text.size());
+								temp = line[inspos.y].txtbuf.data() + text.size() + inspos.x;
+								//line[inspos.y].txtbuf.resize(text.size() + inspos.x);
+								line[inspos.y].txtbuf.erase(text.size() + inspos.x);
+								inspos.x += text.size();
+							}
+							else
+							{
+
+								textline info;
+								info.nHeight = TEXT_HEIGHT;
+
+								info.txtbuf = text;
+								line.insert(line.begin() + inspos.y , info);
+								//line.push_back(info);
+								
+								inspos.x = text.size();
+							}
+
+							text.clear();
+							if (pBuf[k] == 0x0d && pBuf[k + 1] == 0x0a)
+								k++;
+							if (k >= nBufLen)
+								break;
+							k++;
+							if (k >= nBufLen)
+								break;
+							nAddLine++;
+							inspos.y++;
+						}
+
+						text.insert(text.size(), 1, pBuf[k]);
+					}
+					if (text.size() > 0 && nAddLine == 0)
+					{
+						line[inspos.y].txtbuf.insert(inspos.x, text.data(), text.size());
+						inspos.x += text.size();
+					}
+					if (text.size() > 0 && nAddLine!=0)
+					{
+						text += temp;
+						textline info;
+						info.nHeight = TEXT_HEIGHT;
+						info.txtbuf = text;
+						line.insert(line.begin() + inspos.y , info);
+						inspos.x = text.size()-temp.size();
+					}
+
+				}
+				undo.pop();
+			}
 		}
 		else if (c == 01) //ctrl-a  全选
 		{
@@ -957,6 +1196,15 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 				}
 				std::string cptext;
 				char *pText;
+
+				/*
+				cur_undo.ins_begin.x = first.x;
+				cur_undo.ins_begin.y = first.y;
+
+				cur_undo.state = UndoState::Inster;
+			
+				cur_undo.text.push_back(c);*/
+
 				for (int k = first.y; k <= sec.y; k++)
 				{
 					
@@ -971,6 +1219,7 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 						std::string an = UnicodeToANSI(un);
 						pText = an.data();
 						cptext.insert(0, pText, strlen(pText));
+					//	cur_undo.text.insert(0, pText, strlen(pText));
 					}
 					else if (k == sec.y)
 					{
@@ -988,9 +1237,11 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 						pText = an.data();
 						cptext.insert(cptext.size(), pText, strlen(pText));
 					}
-					cptext.insert(cptext.size(),1, 0x0a);
+					if(first.y!=sec.y && k!=sec.y)
+					   cptext.insert(cptext.size(),1, 0x0a);
 				}
-
+			/*	cur_undo.ins_end.x = sec.x;
+				cur_undo.ins_end.y = sec.y;*/
 				if (!OpenClipboard(NULL))
 					return;
 				EmptyClipboard();
@@ -1032,19 +1283,38 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 					std::string text;
 					int nAddLine=0;
 					int nBufLen = strlen(pBuf);
+
+					if(cur_undo.state != UndoState::None)
+			        {
+			            undo.push(cur_undo);
+			            ResetCurUndo();
+			        }
+
+					cur_undo.ins_begin.x = inspos.x;
+					cur_undo.ins_begin.y = inspos.y;
+
+					cur_undo.state = UndoState::Inster;
+
+					//cur_undo.text = pBuf;
+
+					std::string temp;
 					for (int k = 0; k < nBufLen; k++)
 					{
 						if (pBuf[k] == 0x0d || pBuf[k]==0x0a)
 						{
-							if (nAddLine == 0)
+							 if (nAddLine == 0)
 							{
-								if (line.size() == 0)
+								if (line.size() == 0 || k==0)
 								{
 									textline info;
 									info.nHeight = TEXT_HEIGHT;
 									line.push_back(info);
 								}
 								line[inspos.y].txtbuf.insert(inspos.x, text.data(), text.size());
+
+								//cptext.insert(cptext.size(), line[k].txtbuf.data() + first.x, sec.x - first.x);
+								temp = line[inspos.y].txtbuf.data() + inspos.x + text.size();
+								line[inspos.y].txtbuf.erase(inspos.x + text.size(), temp.size());
 								inspos.x += text.size();
 							}
 							else
@@ -1054,38 +1324,57 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 								info.nHeight = TEXT_HEIGHT;
 							
 								info.txtbuf = text;
-								//line.insert(line.begin() + inspos.y + 1, info);
-								line.push_back(info);
-								inspos.y = line.size() - 1;
+								line.insert(line.begin() + inspos.y , info);
 								inspos.x = text.size();
 							}
 						
 							text.clear();
-							if (pBuf[k] == 0x0d && pBuf[k + 1] == 0x0a)
+							/*if (pBuf[k] == 0x0d && pBuf[k + 1] == 0x0a)
+							{
 								k++;
+
+							}*/
 							if (k >= nBufLen)
 								break;
 							k++;
 							if (k >= nBufLen)
 								break;
 							nAddLine++;
+							inspos.y++;
 						}
 	
-						text.insert(text.size(), 1, pBuf[k]);
+						if(pBuf[k]!=0x0d && pBuf[k]!=0x0a)
+						   text.insert(text.size(), 1, pBuf[k]);
+						cur_undo.text.push_back(pBuf[k]);
+
+						
+					
 					}
-					if (text.size() > 0)
+					if (text.size() > 0 && nAddLine == 0)
 					{
+						line[inspos.y].txtbuf.insert(inspos.x, text.data(), text.size());
+						//text += temp;
+					}
+					else if (text.size() > 0 && nAddLine != 0 || temp.size()>0)
+					{
+						text += temp;
 						textline info;
 						info.nHeight = TEXT_HEIGHT;
 						info.txtbuf = text;
-						line.push_back(info);
-						inspos.y = line.size() - 1;
-						inspos.x = text.size();
+						//if(text.size()>temp.size())
+						    line.insert(line.begin() + inspos.y , info);
+						//else
+						//{
+							//line.
+						//}
+			
+	
+						inspos.x = text.size()-temp.size();
 					}
+					cur_undo.ins_end.x = inspos.x;
+					cur_undo.ins_end.y = inspos.y;
 					delete pBuf;
 
-					/*std::wstring un = Utf8ToUnicode(line[k].txtbuf.data());
-					std::string an = UnicodeToANSI(un);*/
 					GlobalUnlock(hClip); 
 					CloseClipboard();
 				}

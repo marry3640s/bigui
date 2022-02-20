@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <stack>
 //#include "GrContext.h"
 #include "ScrollView.h"
 //#include "SkCanvas.h"
@@ -38,6 +39,18 @@ struct FontInfoEach
 	SkScalar ch_width;
 };
 
+enum UndoState {
+	None,
+	Del,
+	Inster
+};
+struct undoInfo {
+	TextPoint ins_begin;
+	TextPoint ins_end;
+	std::string text;
+	UndoState state; //删除
+};
+
 #define TEXT_HEIGHT 16
 class TextField : public UIWidget , public ScrollBarController {
 public:
@@ -67,6 +80,10 @@ public:
 	void insertChar(SkUnichar c);
 	void insertline(textline);
 	void TextSelDel();
+	void PushCurUndeSelDel();
+
+	void ResetCurUndo();
+	void CheckUndo();
 
    // int FindSuitX(std::wstring text, int nCmpX);
    
@@ -97,7 +114,10 @@ private:
     SkColor text_color;
 
 	SelTextInfo selinfo;
-
+	
+	undoInfo cur_undo;
+	std::stack<undoInfo> undo;
+	
     std::deque<textline> line;
     // std::wstring textlist;
     TextPoint inspos;//当前输入文本的位置

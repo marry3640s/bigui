@@ -49,7 +49,7 @@ public:
     /*virtual bool onMouse(int x, int y, skui::InputState, skui::ModifierKey) { return false; }
     virtual bool onMouseWheel(float delta, skui::ModifierKey) { return false; }*/
     bool onMouse(int x, int y, skui::InputState state, skui::ModifierKey) override;
-
+	bool onRMouse(int x, int y, skui::InputState state, skui::ModifierKey) override;
     bool onMouseWheel(float delta, skui::ModifierKey) override;
     void ClickCallback(UIWidget* pWidget, MouseEvent ev);
 

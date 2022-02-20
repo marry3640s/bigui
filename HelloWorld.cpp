@@ -128,14 +128,14 @@ void HelloWorld::TestListView() {
 							 "odbc",
 							 "myserver" };
 	view = new ListView();
-	for (int k = 0; k < 2; k++) view->AddCol(pszTitel[k % 11], 100);
+	for (int k = 0; k < 11; k++) view->AddCol(pszTitel[k % 11], 100);
 	char pszPath[256];
 
 	int nLine = 2000000;//671088-671125
 	for (int j = 0; j < nLine; j++) {
 
 
-		for (int k = 0; k < 2; k++) {
+		for (int k = 0; k < 11; k++) {
 			StaticText* text;
 			if (k == 0) {
 				sprintf_s(pszPath, 256, "%d", j + 1);
@@ -179,7 +179,10 @@ void HelloWorld::TestTextField() {
 	pField->SetSize(fWindow->width(), fWindow->height());
 	//pField->SetSize(100, TEXT_HEIGHT*3/*-5*/);
 	this->AddWidget(pField);
-	//return;
+
+
+
+	return;
 
 	FILE *fp;
 	char str[8192];
@@ -190,6 +193,7 @@ void HelloWorld::TestTextField() {
 	//fp = fopen("C:\\bighouse\\77.txt", "r");
 	//fp = fopen("C:\\bighouse\\老虎证券利率分析.txt", "r");
 	fp = fopen("C:\\bighouse\\22.txt", "r");
+	//fp = fopen("C:\\bighouse\\66.txt", "r");
 	if (fp == NULL) {
 		return;
 	}
@@ -369,7 +373,7 @@ void HelloWorld::onPaint(SkSurface* surface) {
 	}
 	if (nPaintTick % 60 == 0 && nPaintTick != 0) {
 		long long lstamp = (GetTickCount64() - llInitStamp);
-	//	printf("time stamp=%lld,每秒能处理%d帧\n", lstamp, 60 * 1000 / lstamp);
+		//printf("time stamp=%lld,每秒能处理%d帧\n", lstamp, 60 * 1000 / lstamp);
 		llInitStamp = GetTickCount64();
 		// long long nPaintTick=GetTickCount64();
 	}
@@ -412,6 +416,17 @@ bool HelloWorld::onChar(SkUnichar c, skui::ModifierKey modifiers) {
 //	return true;
 //}
 
+bool  HelloWorld::onRMouse(int x, int y, skui::InputState state, skui::ModifierKey modifiers)
+{
+	if (skui::InputState::kDown == state) {
+		int a;
+		a = 5;
+	}
+	else if (skui::InputState::kUp == state)
+	{
+	}
+	return true;
+}
 bool HelloWorld::onMouse(int x, int y, skui::InputState state, skui::ModifierKey modifiers) {
 	if (skui::InputState::kDown == state) {
 		SetCapture(hwnd);

@@ -1371,6 +1371,16 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 	
 						inspos.x = text.size()-temp.size();
 					}
+
+					else if (text.size() == 0 && nAddLine != 0 || temp.size() == 0)
+					{
+						textline info;
+						info.nHeight = TEXT_HEIGHT;
+						info.txtbuf = text;
+						line.insert(line.begin() + inspos.y, info);
+						inspos.x = text.size();
+						//inspos.y++;
+					}
 					cur_undo.ins_end.x = inspos.x;
 					cur_undo.ins_end.y = inspos.y;
 					delete pBuf;

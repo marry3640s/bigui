@@ -79,6 +79,7 @@ public:
 
 	void insertChar(SkUnichar c);
 	void insertline(textline);
+	void insertString(char *pBuf);//²åÈë×Ö·û´®
 	void TextSelDel();
 	void PushCurUndeSelDel();
 

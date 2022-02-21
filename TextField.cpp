@@ -107,7 +107,7 @@ std::wstring Utf8ToUnicode(const std::string& str)
 
 TextField::TextField() 
 {
-    SetBackGroundColor(SkColorSetRGB(230, 230, 230));
+    SetBackGroundColor(SkColorSetRGB(248, 248, 248));
     text_color = SkColorSetRGB(0, 0, 0);
 	memset(&ContentInfo, 0x00, sizeof(ContentInfo));
 	vert_bar = new ScrollBar(Direction::Vertical);
@@ -1034,6 +1034,78 @@ void TextField::insertChar(SkUnichar c)
 	
 }
 
+void  TextField::insertString(char *pBuf)
+{
+	std::string text;
+	int nAddLine = 0;
+	int nBufLen = strlen(pBuf);
+	std::string temp;
+	for (int k = 0; k < nBufLen; k++)
+	{
+		if (pBuf[k] == 0x0d || pBuf[k] == 0x0a)
+		{
+			if (nAddLine == 0)
+			{
+				if (line.size() == 0 || k == 0)
+				{
+					textline info;
+					info.nHeight = TEXT_HEIGHT;
+					line.push_back(info);
+				}
+				line[inspos.y].txtbuf.insert(inspos.x, text.data(), text.size());
+				temp = line[inspos.y].txtbuf.data() + text.size() + inspos.x;
+				//line[inspos.y].txtbuf.resize(text.size() + inspos.x);
+				line[inspos.y].txtbuf.erase(text.size() + inspos.x);
+				inspos.x += text.size();
+			}
+			else
+			{
+
+				textline info;
+				info.nHeight = TEXT_HEIGHT;
+
+				info.txtbuf = text;
+				line.insert(line.begin() + inspos.y, info);
+				//line.push_back(info);
+
+				inspos.x = text.size();
+			}
+
+			text.clear();
+			if (pBuf[k] == 0x0d /*&& pBuf[k + 1] == 0x0a*/)
+				k++;
+			if (k >= nBufLen)
+				break;
+			nAddLine++;
+			inspos.y++;
+		}
+		if (pBuf[k] != 0x0d && pBuf[k] != 0x0a)
+			text.insert(text.size(), 1, pBuf[k]);
+	}
+	if (text.size() > 0 && nAddLine == 0)
+	{
+		line[inspos.y].txtbuf.insert(inspos.x, text.data(), text.size());
+		inspos.x += text.size();
+	}
+	else if (text.size() > 0 && nAddLine != 0 || temp.size() > 0)
+	{
+		text += temp;
+		textline info;
+		info.nHeight = TEXT_HEIGHT;
+		info.txtbuf = text;
+		line.insert(line.begin() + inspos.y, info);
+		inspos.x = text.size() - temp.size();
+	}
+	else if (text.size() == 0 && nAddLine != 0 && temp.size() == 0)
+	{
+		textline info;
+		info.nHeight = TEXT_HEIGHT;
+		info.txtbuf = text;
+		line.insert(line.begin() + inspos.y, info);
+		inspos.x = text.size();
+		//inspos.y++;
+	}
+}
 
 void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 {
@@ -1079,72 +1151,9 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 				{
 					std::reverse(info.text.begin(), info.text.end());
 					char *pBuf = info.text.data();
-					std::string text;
-					int nAddLine = 0;
-					int nBufLen = strlen(pBuf);
 					inspos.x = info.ins_end.x;
 					inspos.y = info.ins_end.y;
-					std::string temp;
-					for (int k = 0; k < nBufLen; k++)
-					{
-						if (pBuf[k] == 0x0d || pBuf[k] == 0x0a)
-						{
-							if (nAddLine == 0)
-							{
-								if (line.size() == 0)
-								{
-									textline info;
-									info.nHeight = TEXT_HEIGHT;
-									line.push_back(info);
-								}
-								line[inspos.y].txtbuf.insert(inspos.x, text.data(), text.size());
-								temp = line[inspos.y].txtbuf.data() + text.size() + inspos.x;
-								//line[inspos.y].txtbuf.resize(text.size() + inspos.x);
-								line[inspos.y].txtbuf.erase(text.size() + inspos.x);
-								inspos.x += text.size();
-							}
-							else
-							{
-
-								textline info;
-								info.nHeight = TEXT_HEIGHT;
-
-								info.txtbuf = text;
-								line.insert(line.begin() + inspos.y , info);
-								//line.push_back(info);
-								
-								inspos.x = text.size();
-							}
-
-							text.clear();
-							if (pBuf[k] == 0x0d && pBuf[k + 1] == 0x0a)
-								k++;
-							if (k >= nBufLen)
-								break;
-							k++;
-							if (k >= nBufLen)
-								break;
-							nAddLine++;
-							inspos.y++;
-						}
-
-						text.insert(text.size(), 1, pBuf[k]);
-					}
-					if (text.size() > 0 && nAddLine == 0)
-					{
-						line[inspos.y].txtbuf.insert(inspos.x, text.data(), text.size());
-						inspos.x += text.size();
-					}
-					if (text.size() > 0 && nAddLine!=0)
-					{
-						text += temp;
-						textline info;
-						info.nHeight = TEXT_HEIGHT;
-						info.txtbuf = text;
-						line.insert(line.begin() + inspos.y , info);
-						inspos.x = text.size()-temp.size();
-					}
-
+					insertString(pBuf);
 				}
 				undo.pop();
 			}
@@ -1295,92 +1304,12 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
 
 					cur_undo.state = UndoState::Inster;
 
-					//cur_undo.text = pBuf;
+					
+					cur_undo.text.insert(0,pBuf,strlen(pBuf));
 
-					std::string temp;
-					for (int k = 0; k < nBufLen; k++)
-					{
-						if (pBuf[k] == 0x0d || pBuf[k]==0x0a)
-						{
-							 if (nAddLine == 0)
-							{
-								if (line.size() == 0 || k==0)
-								{
-									textline info;
-									info.nHeight = TEXT_HEIGHT;
-									line.push_back(info);
-								}
-								line[inspos.y].txtbuf.insert(inspos.x, text.data(), text.size());
-
-								//cptext.insert(cptext.size(), line[k].txtbuf.data() + first.x, sec.x - first.x);
-								temp = line[inspos.y].txtbuf.data() + inspos.x + text.size();
-								line[inspos.y].txtbuf.erase(inspos.x + text.size(), temp.size());
-								inspos.x += text.size();
-							}
-							else
-							{
-								
-								textline info;
-								info.nHeight = TEXT_HEIGHT;
-							
-								info.txtbuf = text;
-								line.insert(line.begin() + inspos.y , info);
-								inspos.x = text.size();
-							}
-						
-							text.clear();
-							/*if (pBuf[k] == 0x0d && pBuf[k + 1] == 0x0a)
-							{
-								k++;
-
-							}*/
-							if (k >= nBufLen)
-								break;
-							k++;
-							if (k >= nBufLen)
-								break;
-							nAddLine++;
-							inspos.y++;
-						}
-	
-						if(pBuf[k]!=0x0d && pBuf[k]!=0x0a)
-						   text.insert(text.size(), 1, pBuf[k]);
-						cur_undo.text.push_back(pBuf[k]);
-
+					insertString(pBuf);
 						
 					
-					}
-					if (text.size() > 0 && nAddLine == 0)
-					{
-						line[inspos.y].txtbuf.insert(inspos.x, text.data(), text.size());
-						//text += temp;
-					}
-					else if (text.size() > 0 && nAddLine != 0 || temp.size()>0)
-					{
-						text += temp;
-						textline info;
-						info.nHeight = TEXT_HEIGHT;
-						info.txtbuf = text;
-						//if(text.size()>temp.size())
-						    line.insert(line.begin() + inspos.y , info);
-						//else
-						//{
-							//line.
-						//}
-			
-	
-						inspos.x = text.size()-temp.size();
-					}
-
-					else if (text.size() == 0 && nAddLine != 0 || temp.size() == 0)
-					{
-						textline info;
-						info.nHeight = TEXT_HEIGHT;
-						info.txtbuf = text;
-						line.insert(line.begin() + inspos.y, info);
-						inspos.x = text.size();
-						//inspos.y++;
-					}
 					cur_undo.ins_end.x = inspos.x;
 					cur_undo.ins_end.y = inspos.y;
 					delete pBuf;

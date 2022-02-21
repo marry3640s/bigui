@@ -21,6 +21,7 @@
 #include "AtlasCache.h"
 #include "TextBMFont.h"
 #include "PlistCache.h"
+#include "Menu.h"
 #include "tools/sk_app/Application.h"
 #include "tools/sk_app/Window.h"
 
@@ -52,7 +53,7 @@ public:
 	bool onRMouse(int x, int y, skui::InputState state, skui::ModifierKey) override;
     bool onMouseWheel(float delta, skui::ModifierKey) override;
     void ClickCallback(UIWidget* pWidget, MouseEvent ev);
-
+	void PopupMenuCallback(UIWidget* pWidget);
 	
 
 
@@ -90,6 +91,7 @@ private:
 	bool fBlink;
 	double fNextTime;
 	TextField* pField;
+	PopupMenu *popMenu;
 };
 
 #endif

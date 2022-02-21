@@ -140,14 +140,15 @@ void HelloWorld::TestListView() {
 			if (k == 0) {
 				sprintf_s(pszPath, 256, "%d", j + 1);
 				text = new StaticText(pszPath);
+
 			}
 			else
 				text = new StaticText(pszTest[k % 11]);
 
 			view->AddCellItem(text, j, k);
 		}
-		// but->SetUiEventCallBack(std::bind(&HelloWorld::ClickCallback, this,
-		// std::placeholders::_1));
+		/*but->SetUiEventCallBack(std::bind(&HelloWorld::ClickCallback, this,
+		 std::placeholders::_1));*/
 	}
 
 	// sview->SetDirection(ScrollView::Direction::Horizontal);
@@ -180,6 +181,14 @@ void HelloWorld::TestTextField() {
 	//pField->SetSize(100, TEXT_HEIGHT*3/*-5*/);
 	this->AddWidget(pField);
 
+	popMenu = new PopupMenu();
+	popMenu->AddMenuItem("cut", 0);
+	popMenu->AddMenuItem("copy", 0);
+	popMenu->AddMenuItem("paste", 0);
+	popMenu->AppendSeparator();
+	popMenu->AddMenuItem("select all", std::bind(&HelloWorld::PopupMenuCallback, this, std::placeholders::_1));
+	this->AddWidget(popMenu);
+	popMenu->SetVisible(false);
 
 
 	return;
@@ -191,8 +200,8 @@ void HelloWorld::TestTextField() {
 	//fp = fopen("C:\\bighouse\\44.txt", "r");
 	//fp = fopen("C:\\bighouse\\55.txt", "r");
 	//fp = fopen("C:\\bighouse\\77.txt", "r");
-	//fp = fopen("C:\\bighouse\\老虎证券利率分析.txt", "r");
-	fp = fopen("C:\\bighouse\\22.txt", "r");
+	fp = fopen("C:\\bighouse\\老虎证券利率分析.txt", "r");
+	//fp = fopen("C:\\bighouse\\22.txt", "r");
 	//fp = fopen("C:\\bighouse\\66.txt", "r");
 	if (fp == NULL) {
 		return;
@@ -225,6 +234,12 @@ void HelloWorld::Init() {
 }
 
 void HelloWorld::ClickCallback(UIWidget* pWidget, MouseEvent ev) {
+}
+
+void HelloWorld::PopupMenuCallback(UIWidget* pWidget)
+{
+	int a;
+	a = 5;
 }
 HelloWorld::HelloWorld(int argc, char** argv, void* platformData)
 	: fBackendType(Window::kNativeGL_BackendType), fRotationAngle(0) {
@@ -419,8 +434,9 @@ bool HelloWorld::onChar(SkUnichar c, skui::ModifierKey modifiers) {
 bool  HelloWorld::onRMouse(int x, int y, skui::InputState state, skui::ModifierKey modifiers)
 {
 	if (skui::InputState::kDown == state) {
-		int a;
-		a = 5;
+		/*int a;
+		a = 5;*/
+		popMenu->OnMouseRDown(x, y);
 	}
 	else if (skui::InputState::kUp == state)
 	{
@@ -431,6 +447,7 @@ bool HelloWorld::onMouse(int x, int y, skui::InputState state, skui::ModifierKey
 	if (skui::InputState::kDown == state) {
 		SetCapture(hwnd);
 		OnMouseDown(x, y);
+		
 	}
 	else if (skui::InputState::kMove == state) {
 		OnMouseMove(x, y);
@@ -438,6 +455,7 @@ bool HelloWorld::onMouse(int x, int y, skui::InputState state, skui::ModifierKey
 	else if (skui::InputState::kUp == state) {
 		OnMouseUp(x, y);
 		ReleaseCapture();
+		popMenu->SetVisible(false);
 	}
 	return true;
 }

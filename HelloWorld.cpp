@@ -18,6 +18,11 @@
 #include "example/xml/tinyxml2.h"
 //#include "windows.h"
 #include "tools/sk_app/win/Window_win.h"
+
+#include <imm.h>
+#ifdef _MSC_VER
+#pragma comment(lib, "imm32")
+#endif
 //HWND hwnd;
 RollImage* roll;
 using namespace sk_app;
@@ -175,9 +180,13 @@ char* G2U2(const char* gb2312)
 }
 
 void HelloWorld::TestTextField() {
+
+	imeInteraction = imeWindowed;
+	pTab = new TabBar();
+	
 	pField = new TextField();
-	pField->SetPosition(0, 0);
-	pField->SetSize(fWindow->width(), fWindow->height());
+	pField->SetPosition(0, 20);
+	pField->SetSize(fWindow->width(), fWindow->height()-20);
 	//pField->SetSize(100, TEXT_HEIGHT*3/*-5*/);
 	this->AddWidget(pField);
 
@@ -189,6 +198,12 @@ void HelloWorld::TestTextField() {
 	popMenu->AddMenuItem("select all", std::bind(&HelloWorld::PopupMenuCallback, this, std::placeholders::_1));
 	this->AddWidget(popMenu);
 	popMenu->SetVisible(false);
+
+	pTab->SetPosition(0, 0);
+	pTab->SetSize(fWindow->width(), 20);
+	int nTabId=pTab->AddTab("New File");
+	pTab->SetTabWidget(nTabId,pField);
+	this->AddWidget(pTab);
 
 
 	return;
@@ -472,4 +487,12 @@ void HelloWorld::onResize(int width, int height)
 		pField->SetPosition(0, 0);
 		pField->SetSize(width, height);
 	}
+}
+
+int HelloWorld::onIMEMessage(unsigned int iMessage, unsigned int wParam, int lParam)
+{
+	OnIMEMsg(hwnd, iMessage, wParam, lParam);
+	return ::DefWindowProc(hwnd, iMessage, wParam, lParam);
+	
+	
 }

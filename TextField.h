@@ -51,7 +51,7 @@ struct undoInfo {
 	UndoState state; //É¾³ý
 };
 
-#define TEXT_HEIGHT 16
+#define TEXT_HEIGHT 17
 class TextField : public UIWidget , public ScrollBarController {
 public:
     TextField();
@@ -64,7 +64,7 @@ public:
     void OnMouseWheel(float delta, uint32_t modifier) override;
     void OnKey(skui::Key key, uint32_t modifiers) override;
     void OnChar(SkUnichar c, uint32_t modifiers) override;
-
+	int  OnIMEMsg(HWND hwnd, unsigned int iMessage, unsigned int wParam, int lParam) override;
 
 
     void DrawCursor(SkCanvas* canvas);

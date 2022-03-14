@@ -4,6 +4,7 @@
 
 #include "Action.h"
 #include "GameTimer.h"
+#include "windows.h"
 //#include "sk_app/Window.h"
 class Action;
 
@@ -22,6 +23,8 @@ public:
 	void OnMouseWheel(float delta, uint32_t modifiers);
     void OnKey(skui::Key key, uint32_t modifiers);
 	void OnChar(SkUnichar c, uint32_t modifiers);
+
+	int OnIMEMsg(HWND hwnd,unsigned int iMessage, unsigned int wParam, int lParam);
 private:
 	//std::vector<UIWidget *> widgetlist;
 };

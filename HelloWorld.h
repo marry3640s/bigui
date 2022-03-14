@@ -22,6 +22,7 @@
 #include "TextBMFont.h"
 #include "PlistCache.h"
 #include "Menu.h"
+#include "TabBar.h"
 #include "tools/sk_app/Application.h"
 #include "tools/sk_app/Window.h"
 
@@ -52,10 +53,14 @@ public:
     bool onMouse(int x, int y, skui::InputState state, skui::ModifierKey) override;
 	bool onRMouse(int x, int y, skui::InputState state, skui::ModifierKey) override;
     bool onMouseWheel(float delta, skui::ModifierKey) override;
+
+    int onIMEMessage(unsigned int nMsg, unsigned int wparam, int lparam) override;
+
+	
     void ClickCallback(UIWidget* pWidget, MouseEvent ev);
 	void PopupMenuCallback(UIWidget* pWidget);
-	
 
+	
 
     void Init();
 
@@ -70,7 +75,7 @@ public:
 
 private:
     void updateTitle();
-
+	enum IMEInteraction { imeWindowed, imeInline } imeInteraction;
     sk_app::Window* fWindow;
     sk_app::Window::BackendType fBackendType;
 
@@ -92,6 +97,7 @@ private:
 	double fNextTime;
 	TextField* pField;
 	PopupMenu *popMenu;
+	TabBar *pTab;
 };
 
 #endif

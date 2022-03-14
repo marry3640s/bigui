@@ -107,7 +107,7 @@ std::wstring Utf8ToUnicode(const std::string& str)
 
 TextField::TextField() 
 {
-    SetBackGroundColor(SkColorSetRGB(248, 248, 248));
+    SetBackGroundColor(SkColorSetRGB(255, 255, 255));
     text_color = SkColorSetRGB(0, 0, 0);
 	memset(&ContentInfo, 0x00, sizeof(ContentInfo));
 	vert_bar = new ScrollBar(Direction::Vertical);
@@ -127,10 +127,24 @@ TextField::TextField()
 	font.setSubpixel(true);
 	font.setSize(18);
 	font.setTypeface(SkTypeface::MakeFromName("simsun", SkFontStyle::Normal()));
+	
 	memset(&inspos, 0x00, sizeof(inspos));
 	memset(chinachar, 0x00, sizeof(chinachar));
 	bSelFlag = false;
 	ResetCurUndo();
+
+	/*char aa = 'a';
+	char tt = 'A';
+	SkScalar fontwidth;
+	SkRect bounds;
+	int nHei = 0;
+	SkPaint paint;
+	int temp = 0;
+	SkString str = SkStringPrintf("历史市场数据");
+	fontwidth = font.measureText(str.c_str(), str.size(), SkTextEncoding::kUTF8, &bounds, &paint);
+	temp = bounds.height();
+	
+	nHei = temp;*/
 	/*if (line.size() == 0)
 	{
 		textline info;
@@ -194,7 +208,7 @@ int TextField::DrawSelRect(SkCanvas* surfaceCanvas,int nLine)
 	int ins_x = ContentInfo.offs_x;
 	//printf("ins_x=%d\n", ins_x);
 	SkPaint sel;
-	sel.setColor(SK_ColorYELLOW);
+	sel.setColor(SkColorSetRGB(153, 201, 239));
 	/*SkPaint sel;
 	sel.setColor(SK_ColorYELLOW);
 	surfaceCanvas->drawRect(SkRect{ 8, 0, 16, TEXT_HEIGHT }, sel);*/
@@ -290,11 +304,13 @@ void TextField::Draw(SkCanvas* canvas)
 	SkRect bounds;
 	SkScalar fontwidth = 0;
 	SkScalar fDisplayWidth = 0;
+
 	for (int k = nIndex; k < line.size(); k++)
 	{
 		//if (GetMouseDragged())
 		DrawSelRect(surfaceCanvas, k);
-		paint.setColor(SkColorSetRGB(0, 0, 0));
+		//paint.setColor(0xDE000000);
+		paint.setColor(text_color);
 		//char *text = G2U(line[k].txtbuf.data());
 		char *text = line[k].txtbuf.data();
 		//if (text != 0)
@@ -306,11 +322,12 @@ void TextField::Draw(SkCanvas* canvas)
 		}
 		//delete text;
 		ins_y += line[k].nHeight;
+		SetContentSize(fDisplayWidth + 32, line.size() * TEXT_HEIGHT +/*(int)GetDisplayHeigth()% */TEXT_HEIGHT);
 		if (ins_y > GetDisplayHeigth())
 			break;
 	}
 	DrawCursor(surfaceCanvas);
-	SetContentSize(fDisplayWidth+32, line.size() * TEXT_HEIGHT+/*(int)GetDisplayHeigth()% */TEXT_HEIGHT);
+	//SetContentSize(fDisplayWidth+32, line.size() * TEXT_HEIGHT+/*(int)GetDisplayHeigth()% */TEXT_HEIGHT);
 	/*int ins_y = 20;
 	int ins_x = 0;
     for (int k = 0; k < line.size(); k++) 
@@ -1428,4 +1445,24 @@ void TextField::ScrollToPosition(ScrollBar* source, int position)
 		pos_x = std::max((float)(-(ContentInfo.width - GetDisplayWidth())), (float)pos_x);
 		SetScrolloffsX(pos_x);
 	}
+}
+
+
+int  TextField::OnIMEMsg(HWND hwnd, unsigned int iMessage, unsigned int wParam, int lParam)
+{
+	if (iMessage == WM_IME_COMPOSITION)
+	{
+		//中文输入的时候，就重新设置输入法的光标位置。
+		HIMC hImc = ::ImmGetContext(hwnd);
+		if (hImc) {
+
+			COMPOSITIONFORM cfs;
+			cfs.dwStyle = CFS_POINT;
+			cfs.ptCurrentPos.x = GetCursorX()+1;
+			cfs.ptCurrentPos.y = GetCursorY()+ TEXT_HEIGHT+5;
+			::ImmSetCompositionWindow(hImc, &cfs);
+			::ImmReleaseContext(hwnd, hImc);
+		}
+	}
+	return true;
 }

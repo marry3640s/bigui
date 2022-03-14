@@ -123,3 +123,16 @@ void UIRoot::OnChar(SkUnichar c, uint32_t modifiers)
 			break;
 	}
 }
+int UIRoot::OnIMEMsg(HWND hwnd, unsigned int iMessage, unsigned int wParam, int lParam)
+{
+	if (GetWidgetList()->size() == 0)
+		return false;
+	for (auto iter = GetWidgetList()->end() - 1; ; iter--)
+	{
+		UIWidget *pWidget = *iter;
+		pWidget->OnIMEMsg(hwnd, iMessage,wParam,lParam);
+		if (iter == GetWidgetList()->begin())
+			break;
+	}
+	return true;
+}

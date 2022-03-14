@@ -9,7 +9,9 @@
 #include "include/core/SkImage.h"
 #include "Action.h"
 #include "GameTimer.h"
+#include "windows.h"
 #include "..\\tools\\sk_app\\Window.h"
+
 class Action;
 class UIWidget;
 
@@ -82,6 +84,8 @@ public:
 
 	virtual void OnKey(skui::Key  key, uint32_t modifiers){};
 	virtual void OnChar(SkUnichar c, uint32_t modifiers) {};
+
+	virtual int  OnIMEMsg(HWND hwnd, unsigned int iMessage, unsigned int wParam, int lParam) { return true; };
 	void SetMouseEventCallBack(MouseCallBackFun fu);
 	SkScalar GetWidth()
 	{

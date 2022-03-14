@@ -84,8 +84,15 @@ void PopupMenu::OnMouseMove(int x, int y)
 {
 	if (IsVisible() == false)
 		return;
-	if (!(x >= GetBound().left() && x <= GetBound().right() && y >= GetBound().top() && y <=GetBound().bottom()))
+	if (!(x >= GetBound().left() && x <= GetBound().right() && y >= GetBound().top() && y <= GetBound().bottom()))
+	{
+		for (int k = 0; k < item.size(); k++)
+		{
+			if ( item[k].sty != ItemStyle::separator)
+				item[k].nStatu = item_NormalStatu;
+		}
 		return;
+	}
 	menuitem *ptr = GetMenuItem(x, y);
 	if (ptr != 0)
 	{

@@ -39,7 +39,8 @@ void UIRoot::OnMouseDown(int x, int y)
 		UIWidget *pWidget = *iter;
 		if (x >= pWidget->GetBound().left() && x <= pWidget->GetBound().right() && y >= pWidget->GetBound().top() && y <= pWidget->GetBound().bottom() && pWidget->IsVisible())
 		{
-			pWidget->OnMouseDown(x, y);
+			if (pWidget->OnMouseDown(x, y) == true)
+				break;
 			//return;
 		}
 		if (iter == GetWidgetList()->begin())
@@ -55,14 +56,18 @@ void UIRoot::OnMouseUp(int x, int y)
 	for (auto iter = GetWidgetList()->end()-1; ;iter--)
 	{
 		UIWidget *pWidget = *iter;
-		//if (x >= pWidget->GetBound().left() && x <= pWidget->GetBound().right() && y >= pWidget->GetBound().top() && y <= pWidget->GetBound().bottom() && pWidget->IsVisible())
-		//{
-			pWidget->OnMouseUp(x, y);
-			//return;
-		//}
+		
+		if (pWidget->OnMouseUp(x, y) == true)
+			break;
+		
 		if (iter == GetWidgetList()->begin())
 			break;
 	}
+	/*for (auto iter = GetWidgetList()->begin(); iter != GetWidgetList()->end(); iter++)
+	{
+		UIWidget *pWidget = *iter;
+		pWidget->OnMouseUp(x, y);
+	}*/
 }
 
 

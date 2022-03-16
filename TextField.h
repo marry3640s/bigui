@@ -59,8 +59,8 @@ public:
 
     void Draw(SkCanvas* canvas) override;
     void OnMouseMove(int x, int y) override;
-    void OnMouseDown(int x, int y) override;
-    void OnMouseUp(int x, int y) override;
+	bool OnMouseDown(int x, int y) override;
+	bool OnMouseUp(int x, int y) override;
     void OnMouseWheel(float delta, uint32_t modifier) override;
     void OnKey(skui::Key key, uint32_t modifiers) override;
     void OnChar(SkUnichar c, uint32_t modifiers) override;

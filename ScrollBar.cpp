@@ -113,10 +113,10 @@ void ScrollBar::OnMouseMove(int x, int y)
 	}
 }
 
-void ScrollBar::OnMouseDown(int x, int y)
+bool ScrollBar::OnMouseDown(int x, int y)
 {
 	if (IsVisible() == false)
-		return;
+		return false;
 	int nMousePos=x;
 	if(nDirectionType==Direction::Vertical)
 		nMousePos=y;
@@ -126,13 +126,14 @@ void ScrollBar::OnMouseDown(int x, int y)
 		//printf("mouse_offset=%d\n",y);
 		SetMouseDragged(true);
 	}
+	return false;
 	
 }
 
-void ScrollBar::OnMouseUp(int x, int y)
+bool ScrollBar::OnMouseUp(int x, int y)
 {
 	if (IsVisible() == false)
-		return;
+		return false;
 	//printf("mouse up=%d\n",y);
 
 	if (GetMouseDragged())
@@ -148,5 +149,6 @@ void ScrollBar::OnMouseUp(int x, int y)
 	
 	}
 	SetMouseDragged(false);
+	return false;
 	
 }

@@ -77,9 +77,9 @@ public:
 
 //	void RunSequence(ActCallBackFun callback, ...);
 
-	virtual void OnMouseDown(int x, int y)=0;
+	virtual bool OnMouseDown(int x, int y)=0;
 	virtual void OnMouseMove(int x, int y)=0;
-	virtual void OnMouseUp(int x,int y)=0;
+	virtual bool OnMouseUp(int x,int y)=0;
 	virtual void OnMouseWheel(float delta, uint32_t modifier)=0;
 
 	virtual void OnKey(skui::Key  key, uint32_t modifiers){};

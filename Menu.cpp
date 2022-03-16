@@ -110,19 +110,20 @@ void PopupMenu::OnMouseMove(int x, int y)
 	}
 }
 
-void PopupMenu::OnMouseDown(int x, int y)
+bool PopupMenu::OnMouseDown(int x, int y)
 {
 	if (IsVisible() == false)
-		return;
+		return false;
 	if (!(x >= GetBound().left() && x <= GetBound().right() && y >= GetBound().top() && y <= GetBound().bottom()))
-		return;
+		return false;
 	menuitem *item = GetMenuItem(x, y);
 	if (item != 0)
 	{
 		if (item->bEnable == false)
-			return;
+			return false;
 	    item->nStatu = item_PressedStatu;
 	}
+	return false;
 }
 
 void PopupMenu::OnMouseRDown(int x, int y)
@@ -132,18 +133,18 @@ void PopupMenu::OnMouseRDown(int x, int y)
 	mouse_y = y;
 }
 
-void PopupMenu::OnMouseUp(int x, int y)
+bool PopupMenu::OnMouseUp(int x, int y)
 {
 
 	if (IsVisible() == false)
-		return;
+		return false;
 	if (!(x >= GetBound().left() && x <= GetBound().right() && y >= GetBound().top() && y <= GetBound().bottom()))
-		return;
+		return false;
 	menuitem *ptr = GetMenuItem(x, y);
 	if (ptr != 0)
 	{
 		if (ptr->bEnable == false)
-			return;
+			return false;
 		if (ptr->nStatu == item_PressedStatu)
 		{
 			if(ptr->func!=0)
@@ -153,6 +154,7 @@ void PopupMenu::OnMouseUp(int x, int y)
 	}
 
 	SetVisible(false);
+	return false;
 }
 
 

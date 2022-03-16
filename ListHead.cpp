@@ -105,13 +105,15 @@ void ListHead::OnMouseMove(int x, int y)
 {
 	nMouseDownCol=GetMousePosCol(x,y);
 }
-void ListHead::OnMouseDown(int x, int y)
+bool ListHead::OnMouseDown(int x, int y)
 {
 	nMouseDownCol=GetMousePosCol(x,y);
+	return false;
 }
-void ListHead::OnMouseUp(int x,int y)
+bool ListHead::OnMouseUp(int x,int y)
 {
 	if(nMouseDownCol==GetMousePosCol(x,y) && nMouseDownCol>=0)
 		listview->ReadySort(nMouseDownCol);
+	return false;
 
 }

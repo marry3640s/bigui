@@ -70,9 +70,6 @@ public:
     void TestListView();
     void TestScrollView();
 
-	//UserInfoStruct userinfo;
-   
-
 private:
     void updateTitle();
 	enum IMEInteraction { imeWindowed, imeInline } imeInteraction;
@@ -82,10 +79,6 @@ private:
     SkScalar fRotationAngle;
     sk_sp<SkImage> image;
     PlistCache* plist_gui;
-
-
-
- 
 
 
 

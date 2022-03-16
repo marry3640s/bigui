@@ -359,7 +359,7 @@ CellSelectedInfo ListView::GetCellItemSelectedInfo(int x,int y)
 	return selinfo;
 }
 
-void ListView::OnMouseDown(int x, int y)
+bool ListView::OnMouseDown(int x, int y)
 {
 	
 	if (vert_bar != NULL)
@@ -389,7 +389,7 @@ void ListView::OnMouseDown(int x, int y)
 		
 	}
 }
-void ListView::OnMouseUp(int x, int y)
+bool ListView::OnMouseUp(int x, int y)
 {
 	if (vert_bar != NULL && vert_bar->IsVisible())
 	{
@@ -408,13 +408,14 @@ void ListView::OnMouseUp(int x, int y)
 		{
 			if (sel_cellinfo.nCol == temp.nCol && sel_cellinfo.nRow == temp.nRow)
 				mecallback(temp,MouseEvent::MOUSE_LBUTTONPRESS);
-			return;
+			return false;
 		}
 		if (sel_cellinfo.nRow == temp.nRow)
 		{
 			mecallback(temp, MouseEvent::MOUSE_LBUTTONPRESS);
 		}
 	}
+	return false;
 }
 void ListView::OnMouseWheel(float delta, uint32_t modifier)
 {

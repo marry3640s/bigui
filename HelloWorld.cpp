@@ -181,12 +181,12 @@ char* G2U2(const char* gb2312)
 
 void HelloWorld::TestTextField() {
 
-	imeInteraction = imeWindowed;
+	//imeInteraction = imeWindowed;
 	pTab = new TabBar();
 	
 	pField = new TextField();
-	pField->SetPosition(0, 20);
-	pField->SetSize(fWindow->width(), fWindow->height()-20);
+	pField->SetPosition(0, 137);
+	pField->SetSize(fWindow->width(), fWindow->height()-137);
 	//pField->SetSize(100, TEXT_HEIGHT*3/*-5*/);
 	this->AddWidget(pField);
 
@@ -199,9 +199,12 @@ void HelloWorld::TestTextField() {
 	this->AddWidget(popMenu);
 	popMenu->SetVisible(false);
 
-	pTab->SetPosition(0, 0);
-	pTab->SetSize(fWindow->width(), 20);
-	int nTabId=pTab->AddTab("New File");
+	pTab->SetPosition(30, 50);
+	pTab->SetSize(fWindow->width()-800, 37);
+	pTab->SetTabStyle((int)(TabStyle::item_have_close | TabStyle::add_but));
+	int nTabId=pTab->AddTab("bbc");
+	int nTabId2 = pTab->AddTab("Button.cpp");
+	int nTabId3 = pTab->AddTab("HelloWorld.cpp");
 	pTab->SetTabWidget(nTabId,pField);
 	this->AddWidget(pTab);
 

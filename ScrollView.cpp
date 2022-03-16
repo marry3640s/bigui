@@ -195,7 +195,7 @@ void ScrollView::OnMouseMove(int x, int y)
 	
 }
 
-void  ScrollView::OnMouseDown(int x, int y)
+bool  ScrollView::OnMouseDown(int x, int y)
 {
     if (vert_bar != NULL && vert_bar->IsVisible())
 	{
@@ -219,12 +219,13 @@ void  ScrollView::OnMouseDown(int x, int y)
 		}
 		
 	}
+	return false;
 
 	
 }
 
 
-void ScrollView::OnMouseUp(int x, int y)
+bool ScrollView::OnMouseUp(int x, int y)
 {
 	if (vert_bar != NULL && vert_bar->IsVisible())
 	{
@@ -234,6 +235,7 @@ void ScrollView::OnMouseUp(int x, int y)
 	{
 		hori_bar->OnMouseUp(x, y);
 	}
+	return false;
 }
 
 void ScrollView::OnMouseWheel(float delta, uint32_t modifier)

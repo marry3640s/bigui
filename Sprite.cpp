@@ -185,7 +185,7 @@ void Sprite::OnMouseMove(int x, int y)
 {
 }
 
-void  Sprite::OnMouseDown(int x, int y)
+bool  Sprite::OnMouseDown(int x, int y)
 {
 }
 

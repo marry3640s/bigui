@@ -523,7 +523,7 @@ int TextField::GetMouseXCharOffset(int point_x)
 	return nOffset;
 }
 
-void TextField::OnMouseDown(int x, int y) 
+bool TextField::OnMouseDown(int x, int y)
 {
 
 	if (vert_bar != NULL && vert_bar->IsVisible())
@@ -540,12 +540,12 @@ void TextField::OnMouseDown(int x, int y)
 
     SkPoint point = ScrollViewToChildPoint(x, y);
 
-    if (point.y() > line.size() * TEXT_HEIGHT) return;
+    if (point.y() > line.size() * TEXT_HEIGHT) return false;
 
 	//int nYIndex = (-GetScrolloffsY()) / TEXT_HEIGHT;
     int nIndex = (point.y()+ (-GetScrolloffsY())) / TEXT_HEIGHT ;
 	if (nIndex >= line.size())
-		return;
+		return false;
 	
    
     SkPaint paint;
@@ -572,12 +572,12 @@ void TextField::OnMouseDown(int x, int y)
 	}*/
 
 
-	
+	return false;
 	
   
 }
 
-void TextField::OnMouseUp(int x, int y) 
+bool TextField::OnMouseUp(int x, int y)
 {
 	/*if (GetMouseDragged() == true)
 	{
@@ -595,6 +595,7 @@ void TextField::OnMouseUp(int x, int y)
 	{
         hori_bar->OnMouseUp(x, y);
     }
+	return false;
 	
 }
 

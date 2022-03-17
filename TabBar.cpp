@@ -97,11 +97,13 @@ void TabBar::Draw(SkCanvas* canvas)
 	int ins_x = 2+GetBound().left();
 
 	int nDisplayWidth = 0;
-
+	bool bShowAllFlag = false;
+	SkRect bounds;
 	for (int k = 0; k < tablist.size(); k++)
 	{
-		sk_sp<SkTextBlob> blob = SkTextBlob::MakeFromString(tablist[k].but->GetText().c_str(), font);
-		SkScalar but_width = blob.get()->bounds().width() + 15;
+	//	sk_sp<SkTextBlob> blob = SkTextBlob::MakeFromString(tablist[k].but->GetText().c_str(), font);
+		SkScalar font_width = font.measureText(tablist[k].but->GetText().c_str(), tablist[k].but->GetText().size(), SkTextEncoding::kUTF8, &bounds, &paint);
+		SkScalar but_width = font_width + 35;
 		nDisplayWidth += but_width;
 	}
 	if (nTabStyle & TabStyle::add_but)
@@ -112,23 +114,29 @@ void TabBar::Draw(SkCanvas* canvas)
 	if (nDisplayWidth < GetBound().width())
 	{
 		nShowIndex = 0;
+		bShowAllFlag = true;
 	}
 	
 	for (int k = 0; k < tablist.size(); k++)
 	{
-		tablist[k].but->SetSize(0, 0);
-		tablist[k].but->SetPosition(0, 0);
+		/*tablist[k].but->SetSize(0, 0);
+		tablist[k].but->SetPosition(0, 0);*/
+		tablist[k].but->SetVisible(false);
 	}
 
 	for (int k = nShowIndex; k < tablist.size(); k++)
 	{
-		sk_sp<SkTextBlob> blob = SkTextBlob::MakeFromString(tablist[k].but->GetText().c_str() , font);
-		
-		SkScalar but_width = blob.get()->bounds().width() + 15;
-		if (ins_x+ but_width > GetBound().right() - addbut_width_hei - 8 - 40)
+		//sk_sp<SkTextBlob> blob = SkTextBlob::MakeFromString(tablist[k].but->GetText().c_str() , font);
+		SkScalar font_width = font.measureText(tablist[k].but->GetText().c_str(), tablist[k].but->GetText().size(), SkTextEncoding::kUTF8, &bounds, &paint);
+		SkScalar but_width = font_width + 35;
+		//SkScalar but_width = blob.get()->bounds().width() + 15;
+		if (ins_x + but_width > GetBound().right() - addbut_width_hei - 8 - 40 && bShowAllFlag==false)
+		{
 			break;
+		}
 		tablist[k].but->SetSize(but_width, 25);
 		tablist[k].but->SetPosition(ins_x, ins_y);
+		tablist[k].but->SetVisible(true);
 		ins_x += but_width;
 		
 	}
@@ -236,7 +244,8 @@ void TabBar::RightButCallback(UIWidget* pWidget, MouseEvent ev)
 
 void TabBar::AddButCallback(UIWidget* pWidget, MouseEvent ev)
 {
-	UIWidget *pSubTab=AddTab("new file...");
+	SkString str=SkStringPrintf("New File-%d", nTabIdIndex + 1);
+	UIWidget *pSubTab=AddTab((char *)str.c_str());
 	if (AddTabFun != 0)
 		AddTabFun(pSubTab);
 	

@@ -196,17 +196,17 @@ void HelloWorld::TestTextField() {
 	
 	//this->AddWidget(pField);
 
-	//popMenu = new PopupMenu();
-	//popMenu->AddMenuItem("cut", 0);
-	//popMenu->AddMenuItem("copy", 0);
-	//popMenu->AddMenuItem("paste", 0);
-	//popMenu->AppendSeparator();
-	//popMenu->AddMenuItem("select all", std::bind(&HelloWorld::PopupMenuCallback, this, std::placeholders::_1));
-	//this->AddWidget(popMenu);
-	//popMenu->SetVisible(false);
+	popMenu = new PopupMenu();
+	popMenu->AddMenuItem("cut", 0);
+	popMenu->AddMenuItem("copy", 0);
+	popMenu->AddMenuItem("paste", 0);
+	popMenu->AppendSeparator();
+	popMenu->AddMenuItem("select all", std::bind(&HelloWorld::PopupMenuCallback, this, std::placeholders::_1));
+	this->AddWidget(popMenu);
+	popMenu->SetVisible(false);
 
 	pTab->SetPosition(0, 0);
-	pTab->SetSize(fWindow->width(), 37);
+	pTab->SetSize(fWindow->width()-900, 37);
 	pTab->SetTabStyle((int)(TabStyle::item_have_close | TabStyle::add_but));
 	pTab->SetAddTabCallBack(std::bind(&HelloWorld::AddTabCallback, this, std::placeholders::_1));
 	//int nTabId=pTab->AddTab("bbc");

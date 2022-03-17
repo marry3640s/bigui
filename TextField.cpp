@@ -272,6 +272,8 @@ int TextField::DrawSelRect(SkCanvas* surfaceCanvas,int nLine)
 
 void TextField::Draw(SkCanvas* canvas) 
 {
+	if (IsVisible() == false)
+		return;
 	ContentInfo.offs_y = GetScrolloffsY();
 	SkScalar diff_y = ContentInfo.offs_y - ContentInfo.preoffs_y;
 	ContentInfo.offs_x = GetScrolloffsX();
@@ -525,7 +527,8 @@ int TextField::GetMouseXCharOffset(int point_x)
 
 bool TextField::OnMouseDown(int x, int y)
 {
-
+	if (IsVisible() == false)
+		return false;
 	if (vert_bar != NULL && vert_bar->IsVisible())
 	{
         if (x >= vert_bar->GetBound().left() && x <= vert_bar->GetBound().right() && y >= vert_bar->GetBound().top() && y <= vert_bar->GetBound().bottom())
@@ -579,6 +582,8 @@ bool TextField::OnMouseDown(int x, int y)
 
 bool TextField::OnMouseUp(int x, int y)
 {
+	if (IsVisible() == false)
+		return false;
 	/*if (GetMouseDragged() == true)
 	{
 		inspos.x=selinfo.end.x;
@@ -601,6 +606,8 @@ bool TextField::OnMouseUp(int x, int y)
 
 void TextField::OnMouseWheel(float delta, uint32_t modifier) 
 {
+	if (IsVisible() == false)
+		return;
     if (vert_bar == NULL || !vert_bar->IsVisible()) 
 		return;
     ScrollToPosition(vert_bar, GetScrolloffsY() + delta * 20);
@@ -749,6 +756,8 @@ void TextField::TextSelDel()
 	bSelFlag = false;
 }
 void TextField::OnKey(skui::Key key, uint32_t modifiers) {
+	if (IsVisible() == false)
+		return;
 	skui::ModifierKey modi = (skui::ModifierKey)modifiers;
 	using sknonstd::Any;
 	skui::ModifierKey ctrlAltCmd = modi & (skui::ModifierKey::kControl |
@@ -1132,7 +1141,8 @@ void TextField::OnChar(SkUnichar c, uint32_t modifiers)
         ImmSetCandidateWindow(imm_context, &exclude_rectangle);*/
 
    //ctrl-v   modifiers=16,c=22
-
+	if (IsVisible() == false)
+		return;
 	using sknonstd::Any;
 	skui::ModifierKey modi = (skui::ModifierKey)modifiers;
 
@@ -1451,6 +1461,8 @@ void TextField::ScrollToPosition(ScrollBar* source, int position)
 
 int  TextField::OnIMEMsg(HWND hwnd, unsigned int iMessage, unsigned int wParam, int lParam)
 {
+	if (IsVisible() == false)
+		return true;
 	if (iMessage == WM_IME_COMPOSITION)
 	{
 		//中文输入的时候，就重新设置输入法的光标位置。
@@ -1459,8 +1471,8 @@ int  TextField::OnIMEMsg(HWND hwnd, unsigned int iMessage, unsigned int wParam, 
 
 			COMPOSITIONFORM cfs;
 			cfs.dwStyle = CFS_POINT;
-			cfs.ptCurrentPos.x = GetCursorX()+1;
-			cfs.ptCurrentPos.y = GetCursorY()+ TEXT_HEIGHT+5;
+			cfs.ptCurrentPos.x = GetCursorX()+1+ GetBound().left();
+			cfs.ptCurrentPos.y = GetCursorY()+ /*TEXT_HEIGHT+5*/+GetBound().top();
 			::ImmSetCompositionWindow(hImc, &cfs);
 			::ImmReleaseContext(hwnd, hImc);
 		}

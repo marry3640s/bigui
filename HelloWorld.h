@@ -59,6 +59,7 @@ public:
 	
     void ClickCallback(UIWidget* pWidget, MouseEvent ev);
 	void PopupMenuCallback(UIWidget* pWidget);
+	void AddTabCallback(UIWidget* pWidget);
 
 	
 

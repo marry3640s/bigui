@@ -28,7 +28,7 @@ enum MouseEvent{
 
 typedef std::function<void(UIWidget *p,MouseEvent ev)> MouseCallBackFun;
 
-
+typedef std::function<void(UIWidget *p)> NormalCallBackFun;
 
 extern  ActionManage *gActionManage;
 extern  GameTimerManage *gTimerManage;

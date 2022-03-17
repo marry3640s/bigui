@@ -178,34 +178,41 @@ char* G2U2(const char* gb2312)
 	if (wstr) delete[] wstr;
 	return str;
 }
-
+void HelloWorld::AddTabCallback(UIWidget* pSubTab)
+{
+	/*int a;
+	a = 5;*/
+	TextField *pTextField = new TextField();
+	pTextField->SetPosition(0, 37);
+	pTextField->SetSize(fWindow->width(), fWindow->height() - 37);
+	this->AddWidget(pTextField);
+	pTab->SetTabWidget(pSubTab, pTextField);
+}
 void HelloWorld::TestTextField() {
 
 	//imeInteraction = imeWindowed;
 	pTab = new TabBar();
 	
-	pField = new TextField();
-	pField->SetPosition(0, 137);
-	pField->SetSize(fWindow->width(), fWindow->height()-137);
-	//pField->SetSize(100, TEXT_HEIGHT*3/*-5*/);
-	this->AddWidget(pField);
+	
+	//this->AddWidget(pField);
 
-	popMenu = new PopupMenu();
-	popMenu->AddMenuItem("cut", 0);
-	popMenu->AddMenuItem("copy", 0);
-	popMenu->AddMenuItem("paste", 0);
-	popMenu->AppendSeparator();
-	popMenu->AddMenuItem("select all", std::bind(&HelloWorld::PopupMenuCallback, this, std::placeholders::_1));
-	this->AddWidget(popMenu);
-	popMenu->SetVisible(false);
+	//popMenu = new PopupMenu();
+	//popMenu->AddMenuItem("cut", 0);
+	//popMenu->AddMenuItem("copy", 0);
+	//popMenu->AddMenuItem("paste", 0);
+	//popMenu->AppendSeparator();
+	//popMenu->AddMenuItem("select all", std::bind(&HelloWorld::PopupMenuCallback, this, std::placeholders::_1));
+	//this->AddWidget(popMenu);
+	//popMenu->SetVisible(false);
 
-	pTab->SetPosition(30, 50);
-	pTab->SetSize(fWindow->width()-800, 37);
+	pTab->SetPosition(0, 0);
+	pTab->SetSize(fWindow->width(), 37);
 	pTab->SetTabStyle((int)(TabStyle::item_have_close | TabStyle::add_but));
-	int nTabId=pTab->AddTab("bbc");
-	int nTabId2 = pTab->AddTab("Button.cpp");
-	int nTabId3 = pTab->AddTab("HelloWorld.cpp");
-	pTab->SetTabWidget(nTabId,pField);
+	pTab->SetAddTabCallBack(std::bind(&HelloWorld::AddTabCallback, this, std::placeholders::_1));
+	//int nTabId=pTab->AddTab("bbc");
+	//int nTabId2 = pTab->AddTab("Button.cpp");
+	//int nTabId3 = pTab->AddTab("HelloWorld.cpp");
+	//pTab->SetTabWidget(nTabId,pField);
 	this->AddWidget(pTab);
 
 
@@ -485,11 +492,11 @@ bool HelloWorld::onMouseWheel(float delta, skui::ModifierKey modifiers) {
 
 void HelloWorld::onResize(int width, int height)
 {
-	if (pField != 0)
+	/*if (pField != 0)
 	{
 		pField->SetPosition(0, 0);
 		pField->SetSize(width, height);
-	}
+	}*/
 }
 
 int HelloWorld::onIMEMessage(unsigned int iMessage, unsigned int wParam, int lParam)

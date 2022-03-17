@@ -21,6 +21,7 @@ TabBar::TabBar()
 	createRightBut();
 
 	nShowIndex = 0;
+	AddTabFun = 0;
 }
 
 void TabBar::createLeftBut()
@@ -174,6 +175,8 @@ void TabBar::CloseButCallback(UIWidget* pWidget, int nTag)
 		if (iter->but == pWidget)
 		{
 			delete pWidget;
+			if (iter->pWidget != NULL)
+				delete iter->pWidget;
 			iter = tablist.erase(iter);
 		}
 		else
@@ -188,12 +191,16 @@ void TabBar::MouseDownCallback(UIWidget* pWidget)
 	for (auto iter = tablist.begin(); iter != tablist.end();iter++)
 	{
 	
+		if (iter->pWidget != NULL)
+			iter->pWidget->SetVisible(false);
 		if (iter->but->GetButStatu() != Button::but_DisabledStatu)
 		{
 			iter->but->SetButStatu(Button::but_NormalStatu);
 			if (iter->but == pWidget)
 			{
 				iter->but->SetButStatu(Button::but_SelStatu);
+				if (iter->pWidget != NULL)
+				   iter->pWidget->SetVisible(true);
 			}
 		}
 	}
@@ -229,9 +236,18 @@ void TabBar::RightButCallback(UIWidget* pWidget, MouseEvent ev)
 
 void TabBar::AddButCallback(UIWidget* pWidget, MouseEvent ev)
 {
-	AddTab("new file...");
+	UIWidget *pSubTab=AddTab("new file...");
+	if (AddTabFun != 0)
+		AddTabFun(pSubTab);
+	
+	for (int k = 0; k < tablist.size(); k++)
+	{
+		if (tablist[k].pWidget != NULL)
+			tablist[k].pWidget->SetVisible(false);
+	}
+	MouseDownCallback(pSubTab);
 }
-int TabBar::AddTab(char *pName)
+UIWidget * TabBar::AddTab(char *pName)
 {
 	tabInfo info;
 	nTabIdIndex++;
@@ -254,12 +270,18 @@ int TabBar::AddTab(char *pName)
 	info.but = but;
 
 	tablist.push_back(info);
-	return nTabIdIndex;
+	return but;
 }
 
-void TabBar::SetTabWidget(int nTabId, UIWidget *pWidget)
+void TabBar::SetTabWidget(UIWidget *pSubTab, UIWidget *pWidget)
 {
-
+	for (int k = 0; k < tablist.size(); k++)
+	{
+		if (pSubTab == tablist[k].but)
+		{
+			tablist[k].pWidget = pWidget;
+		}
+	}
 }
 
 void TabBar::SetTabStyle(int nStyle)

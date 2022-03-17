@@ -26,9 +26,9 @@ public:
 	bool OnMouseUp(int x, int y) override;
 	void OnMouseWheel(float delta, uint32_t modifier) override {};
 
-	int AddTab(char *pName);
+	UIWidget *AddTab(char *pName);
 	void SetTabStyle(int nStyle); //设置样式
-	void SetTabWidget(int nTabId, UIWidget *pWidget);
+	void SetTabWidget(UIWidget *pSubTab, UIWidget *pWidget);
 
 	void CloseButCallback(UIWidget* pWidget, int nTag);
 	void MouseDownCallback(UIWidget* pWidget);
@@ -38,7 +38,14 @@ public:
 	void createLeftBut();
 	void createRightBut();
 
+	//设置添加tab回调
+	void SetAddTabCallBack(NormalCallBackFun fun)
+	{
+		AddTabFun = fun;
+	}
 private:
+
+	NormalCallBackFun AddTabFun; 
 	struct tabInfo
 	{
 		//std::string  name;

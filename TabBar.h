@@ -5,7 +5,7 @@
 #include "include/core/SkGraphics.h"
 #include "include/core/SkImage.h"
 #include "Button.h"
-
+#include "UIRoot.h"
 
 #define TABITEM_MAX_WIDTH  100  //tab×î´ó¿í¶È
 #define TAB_HEIGHT 20

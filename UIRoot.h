@@ -28,4 +28,15 @@ public:
 private:
 	//std::vector<UIWidget *> widgetlist;
 };
+#include <iostream>
+//#include <cstdlib>
+//#include <string>
+//#include <sstream>
 
+namespace CharEncoding {
+	char* G2U(const char* gb2312);
+	std::string UnicodeToANSI(const std::wstring& str);
+	std::wstring AnsiToUNICODE(const std::string& str);
+	std::string UnicodeToUTF8(LPCWSTR lpszWideStr);
+	std::wstring Utf8ToUnicode(const std::string& str);
+}

@@ -141,3 +141,109 @@ int UIRoot::OnIMEMsg(HWND hwnd, unsigned int iMessage, unsigned int wParam, int 
 	}
 	return true;
 }
+
+
+
+namespace CharEncoding {
+	char* G2U(const char* gb2312)
+	{
+		int len = MultiByteToWideChar(CP_ACP, 0, gb2312, -1, NULL, 0);
+		wchar_t* wstr = new wchar_t[len + 1];
+		memset(wstr, 0, len + 1);
+		MultiByteToWideChar(CP_ACP, 0, gb2312, -1, wstr, len);
+		len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
+		char* str = new char[len + 1];
+		memset(str, 0, len + 1);
+		WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
+		if (wstr) delete[] wstr;
+		return str;
+	}
+
+	std::string UnicodeToANSI(const std::wstring& str)
+	{
+		char*  pElementText;
+		int    iTextLen;
+		// 宽字节转多字节
+		iTextLen = WideCharToMultiByte(CP_ACP, 0,
+			str.c_str(),
+			-1,
+			nullptr,
+			0,
+			nullptr,
+			nullptr);
+
+		pElementText = new char[iTextLen + 1];
+		memset((void*)pElementText, 0, sizeof(char) * (iTextLen + 1));
+		::WideCharToMultiByte(CP_ACP,
+			0,
+			str.c_str(),
+			-1,
+			pElementText,
+			iTextLen,
+			nullptr,
+			nullptr);
+
+		std::string strText;
+		strText = pElementText;
+		delete[] pElementText;
+		return strText;
+	}
+
+	std::wstring AnsiToUNICODE(const std::string& str)
+	{
+		wchar_t*  pElementText;
+		int    iTextLen;
+		// 宽字节转多字节
+		iTextLen = MultiByteToWideChar(CP_ACP, 0,
+			str.c_str(),
+			-1,
+			nullptr,
+			0);
+
+		pElementText = new wchar_t[iTextLen + 1];
+		memset((void*)pElementText, 0, sizeof(char) * (iTextLen + 1));
+		::MultiByteToWideChar(CP_ACP,
+			0,
+			str.c_str(),
+			-1,
+			pElementText,
+			iTextLen);
+
+		std::wstring strText;
+		strText = pElementText;
+		delete[] pElementText;
+		return strText;
+	}
+
+	std::string UnicodeToUTF8(LPCWSTR lpszWideStr)
+	{
+		int nLen = ::WideCharToMultiByte(CP_UTF8, 0, lpszWideStr, -1,
+			nullptr, 0, nullptr, nullptr);
+
+		char* buffer = new char[nLen + 1];
+		::ZeroMemory(buffer, nLen + 1);
+
+		::WideCharToMultiByte(CP_UTF8, 0, lpszWideStr, -1,
+			buffer, nLen, nullptr, nullptr);
+
+		std::string multStr = buffer;
+		delete[] buffer;
+		return multStr;
+	}
+
+	std::wstring Utf8ToUnicode(const std::string& str)
+	{
+		int nLen = ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(),
+			nullptr, 0);
+
+		WCHAR* buffer = new WCHAR[nLen + 1];
+		::ZeroMemory(buffer, sizeof(WCHAR)* (nLen + 1));
+
+		::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(),
+			buffer, nLen);
+
+		std::wstring wideStr = buffer;
+		delete[] buffer;
+		return wideStr;
+	}
+}

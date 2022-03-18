@@ -107,6 +107,17 @@ public:
 		return bMouseDragged;
 	}
 
+	void SetTextFieldStyle(int nStyle)
+	{
+		nTextFieldStyle = nStyle;
+	}
+	enum TextFieldStyle {
+		single_line=1,     //单行
+		multi_line=2,     //多行
+		password=4,       //密码框
+		show_linenum=8,   //显示行数
+	};
+
 private:
     // std::deque<TextDesc> textlist;
     ScrollBar* vert_bar;
@@ -135,7 +146,6 @@ private:
 
 	bool bMouseDragged;
 	bool bSelFlag;
-    // SkString
+	int nTextFieldStyle;
+	int nShowNumWidth;
 };
-
-// DrawStringRectWithFlag

@@ -2,109 +2,7 @@
 #include "windows.h"
 #include "include/core/SkTextBlob.h"
 #include "tools/gpu/GrContextFactory.h"
-
-char* G2U(const char* gb2312)
-{
-	int len = MultiByteToWideChar(CP_ACP, 0, gb2312, -1, NULL, 0);
-	wchar_t* wstr = new wchar_t[len + 1];
-	memset(wstr, 0, len + 1);
-	MultiByteToWideChar(CP_ACP, 0, gb2312, -1, wstr, len);
-	len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
-	char* str = new char[len + 1];
-	memset(str, 0, len + 1);
-	WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
-	if (wstr) delete[] wstr;
-	return str;
-}
-
-std::string UnicodeToANSI(const std::wstring& str)
-{
-	char*  pElementText;
-	int    iTextLen;
-	// 宽字节转多字节
-	iTextLen = WideCharToMultiByte(CP_ACP, 0,
-		str.c_str(),
-		-1,
-		nullptr,
-		0,
-		nullptr,
-		nullptr);
-
-	pElementText = new char[iTextLen + 1];
-	memset((void*)pElementText, 0, sizeof(char) * (iTextLen + 1));
-	::WideCharToMultiByte(CP_ACP,
-		0,
-		str.c_str(),
-		-1,
-		pElementText,
-		iTextLen,
-		nullptr,
-		nullptr);
-
-	std::string strText;
-	strText = pElementText;
-	delete[] pElementText;
-	return strText;
-}
-
-std::wstring AnsiToUNICODE(const std::string& str)
-{
-	wchar_t*  pElementText;
-	int    iTextLen;
-	// 宽字节转多字节
-	iTextLen = MultiByteToWideChar(CP_ACP, 0,
-		str.c_str(),
-		-1,
-		nullptr,
-		0);
-
-	pElementText = new wchar_t[iTextLen + 1];
-	memset((void*)pElementText, 0, sizeof(char) * (iTextLen + 1));
-	::MultiByteToWideChar(CP_ACP,
-		0,
-		str.c_str(),
-		-1,
-		pElementText,
-		iTextLen);
-
-	std::wstring strText;
-	strText = pElementText;
-	delete[] pElementText;
-	return strText;
-}
-
-std::string UnicodeToUTF8(LPCWSTR lpszWideStr)
-{
-	int nLen = ::WideCharToMultiByte(CP_UTF8, 0, lpszWideStr, -1,
-		nullptr, 0, nullptr, nullptr);
-
-	char* buffer = new char[nLen + 1];
-	::ZeroMemory(buffer, nLen + 1);
-
-	::WideCharToMultiByte(CP_UTF8, 0, lpszWideStr, -1,
-		buffer, nLen, nullptr, nullptr);
-
-	std::string multStr = buffer;
-	delete[] buffer;
-	return multStr;
-}
-
-std::wstring Utf8ToUnicode(const std::string& str)
-{
-	int nLen = ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(),
-		nullptr, 0);
-
-	WCHAR* buffer = new WCHAR[nLen + 1];
-	::ZeroMemory(buffer, sizeof(WCHAR)* (nLen + 1));
-
-	::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(),
-		buffer, nLen);
-
-	std::wstring wideStr = buffer;
-	delete[] buffer;
-	return wideStr;
-}
-
+using namespace CharEncoding;
 TextField::TextField() 
 {
     SetBackGroundColor(SkColorSetRGB(255, 255, 255));
@@ -114,6 +12,8 @@ TextField::TextField()
     hori_bar = new ScrollBar(Direction::Horizontal);
     vert_bar->set_controller(this);
     hori_bar->set_controller(this);
+
+	nTextFieldStyle = TextFieldStyle::multi_line;
 
     //imm_context = ::ImmGetContext(hwnd);
     //CANDIDATEFORM exclude_rectangle = {0, CFS_EXCLUDE, {500, 500}, {200, 100, 500, 200}};
@@ -133,6 +33,8 @@ TextField::TextField()
 	bSelFlag = false;
 	ResetCurUndo();
 
+	nShowNumWidth = 0;
+
 	/*char aa = 'a';
 	char tt = 'A';
 	SkScalar fontwidth;
@@ -145,12 +47,12 @@ TextField::TextField()
 	temp = bounds.height();
 	
 	nHei = temp;*/
-	/*if (line.size() == 0)
+	if (line.size() == 0)
 	{
 		textline info;
 		info.nHeight = TEXT_HEIGHT;
 		line.push_back(info);
-	}*/
+	}
 }
 TextField::~TextField() 
 {
@@ -205,7 +107,7 @@ int TextField::DrawSelRect(SkCanvas* surfaceCanvas,int nLine)
 		printf("gggg\n");
 	}*/
 	int ins_y =  nLine* TEXT_HEIGHT+ ContentInfo.offs_y;
-	int ins_x = ContentInfo.offs_x;
+	int ins_x = ContentInfo.offs_x+ nShowNumWidth;
 	//printf("ins_x=%d\n", ins_x);
 	SkPaint sel;
 	sel.setColor(SkColorSetRGB(153, 201, 239));
@@ -275,9 +177,8 @@ void TextField::Draw(SkCanvas* canvas)
 	if (IsVisible() == false)
 		return;
 	ContentInfo.offs_y = GetScrolloffsY();
-	SkScalar diff_y = ContentInfo.offs_y - ContentInfo.preoffs_y;
 	ContentInfo.offs_x = GetScrolloffsX();
-	SkScalar diff_x = ContentInfo.offs_x - ContentInfo.preoffs_x;
+	
    // sk_sp<GrContext> context = GrContext::MakeGL(interface);
    // GrContext* context = canvas->getGrContext();
     auto context = canvas->recordingContext();
@@ -294,8 +195,26 @@ void TextField::Draw(SkCanvas* canvas)
 	//surfaceCanvas->drawRect(SkRect{ -28, 0,-20, TEXT_HEIGHT }, sel);
 	int nIndex = (-ContentInfo.offs_y) / TEXT_HEIGHT;
 
-	int ins_y = TEXT_HEIGHT- (-ContentInfo.offs_y)% TEXT_HEIGHT;
-	int ins_x = ContentInfo.offs_x;
+
+
+	SkRect bounds;
+	SkScalar fontwidth = 0;
+	SkScalar fDisplayWidth = 0;
+	//有显示行数模式
+	if (nTextFieldStyle & TextFieldStyle::show_linenum)
+	{
+		//计算显示行数的宽度
+		int nMaxNum = nIndex + GetDisplayHeigth() / TEXT_HEIGHT+1;
+		SkString str = SkStringPrintf("%d", nMaxNum);
+		fontwidth = font.measureText(str.c_str(), str.size(), SkTextEncoding::kUTF8, &bounds, &paint);
+		nShowNumWidth = fontwidth + 10;
+		SkPaint paint_line;
+		paint_line.setColor(SkColorSetARGB(0xFF, 233, 231, 233));
+		surfaceCanvas->drawRect(SkRect{ 0, 0, (SkScalar)nShowNumWidth, GetHeight() }, paint_line);
+	}
+
+	int ins_y = TEXT_HEIGHT - (-ContentInfo.offs_y) % TEXT_HEIGHT;
+	int ins_x = ContentInfo.offs_x+ nShowNumWidth;
 	
 	///测试显示中文代码
 	/*SkString str = SkStringPrintf("Test text. 一二三四五六七八九十");
@@ -303,16 +222,24 @@ void TextField::Draw(SkCanvas* canvas)
 	paint.setColor(SkColorSetRGB(0, 0, 0));
 	surfaceCanvas->drawSimpleText(text, strlen(text), SkTextEncoding::kUTF8,
 		ins_x, ins_y, font, paint);*/
-	SkRect bounds;
-	SkScalar fontwidth = 0;
-	SkScalar fDisplayWidth = 0;
+	
 
 	for (int k = nIndex; k < line.size(); k++)
 	{
 		//if (GetMouseDragged())
+		
 		DrawSelRect(surfaceCanvas, k);
 		//paint.setColor(0xDE000000);
 		paint.setColor(text_color);
+
+		if (nTextFieldStyle & TextFieldStyle::show_linenum)
+		{
+			SkPaint paint_num;
+			paint_num.setColor(SkColorSetARGB(0xFF, 45, 145, 175));
+			SkString str = SkStringPrintf("%d",  1+k);
+			surfaceCanvas->drawSimpleText(str.c_str(), str.size(), SkTextEncoding::kUTF8,
+				9, ins_y, font, paint_num);
+		}
 		//char *text = G2U(line[k].txtbuf.data());
 		char *text = line[k].txtbuf.data();
 		//if (text != 0)
@@ -329,23 +256,7 @@ void TextField::Draw(SkCanvas* canvas)
 			break;
 	}
 	DrawCursor(surfaceCanvas);
-	//SetContentSize(fDisplayWidth+32, line.size() * TEXT_HEIGHT+/*(int)GetDisplayHeigth()% */TEXT_HEIGHT);
-	/*int ins_y = 20;
-	int ins_x = 0;
-    for (int k = 0; k < line.size(); k++) 
-	{
-        paint.setColor(SkColorSetRGB(0, 0, 0));
-
-        std::wstring* ptext = GetLineText(k);
-        surfaceCanvas->drawSimpleText(ptext->c_str(), ptext->size() * 2, kUTF16_SkTextEncoding,ins_x, ins_y, font, paint);
-        ins_y += line[k].nHeight;
-    }*/
-
-  //  DrawCurPosBlink(surfaceCanvas);
-    /*Sequence sq = Sequence(0, [&]() {
-        DrawCurPosBlink(surfaceCanvas);
-    }, new DelayTime(1.0), 0);
-    sq.RunSequence();*/
+	
 
     paint.setColor(GetBackGroundColor());
     sk_sp<SkImage> image(gpuSurface->makeImageSnapshot());
@@ -381,7 +292,7 @@ SkScalar TextField::GetCursorX()
 	//}
 	//delete text;
 	width = font.measureText(text, inspos.x, SkTextEncoding::kUTF8, &bounds, &paint);
-	return width + GetScrolloffsX();
+	return width + GetScrolloffsX()+ nShowNumWidth;
 		
 }
 

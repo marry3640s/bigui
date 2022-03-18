@@ -185,6 +185,7 @@ void HelloWorld::AddTabCallback(UIWidget* pSubTab)
 	TextField *pTextField = new TextField();
 	pTextField->SetPosition(0, 37);
 	pTextField->SetSize(fWindow->width(), fWindow->height() - 37);
+	pTextField->SetTextFieldStyle(TextField::TextFieldStyle::multi_line | TextField::TextFieldStyle::show_linenum);
 	this->AddWidget(pTextField);
 	pTab->SetTabWidget(pSubTab, pTextField);
 }
@@ -206,7 +207,7 @@ void HelloWorld::TestTextField() {
 	popMenu->SetVisible(false);
 
 	pTab->SetPosition(0, 0);
-	pTab->SetSize(fWindow->width()-900, 37);
+	pTab->SetSize(fWindow->width(), 37);
 	pTab->SetTabStyle((int)(TabStyle::item_have_close | TabStyle::add_but));
 	pTab->SetAddTabCallBack(std::bind(&HelloWorld::AddTabCallback, this, std::placeholders::_1));
 	//int nTabId=pTab->AddTab("bbc");

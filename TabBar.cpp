@@ -1,6 +1,7 @@
 #include "TabBar.h"
 #include "include/core/SkTextBlob.h"
 #include "include/core/SkSurface.h"
+using namespace CharEncoding;
 TabBar::TabBar()
 {
 	nTabIdIndex = 0;
@@ -9,7 +10,7 @@ TabBar::TabBar()
 
 	font.setSubpixel(true);
 	font.setSize(16);
-	//font.setTypeface(SkTypeface::MakeFromName("simsun", SkFontStyle::Normal()));
+	font.setTypeface(SkTypeface::MakeFromName("simsun", SkFontStyle::Normal()));
 
 	nSelTab = 0;
 	//255,242,157 sel col
@@ -244,8 +245,8 @@ void TabBar::RightButCallback(UIWidget* pWidget, MouseEvent ev)
 
 void TabBar::AddButCallback(UIWidget* pWidget, MouseEvent ev)
 {
-	SkString str=SkStringPrintf("New File-%d", nTabIdIndex + 1);
-	UIWidget *pSubTab=AddTab((char *)str.c_str());
+	SkString str=SkStringPrintf("新建文件-%d", nTabIdIndex + 1);
+	UIWidget *pSubTab=AddTab((char *)G2U(str.c_str()));
 	if (AddTabFun != 0)
 		AddTabFun(pSubTab);
 	

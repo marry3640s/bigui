@@ -176,6 +176,7 @@ ButtonHaveClose::ButtonHaveClose()
 		fonts_back[k].setColor(SkColorSetARGB(0xFF, 255, 255,255));
 		fonts_text[k].setSubpixel(true);
 		fonts_text[k].setSize(16);
+		fonts_text[k].setTypeface(SkTypeface::MakeFromName("simsun", SkFontStyle::Normal()));
 	}
 	fonts_back[but_SelStatu].setColor(SkColorSetARGB(0xFF, 0, 0, 0));
 	fonts_back[but_SetAndStayStatu].setColor(SkColorSetARGB(0xFF, 0, 0, 0));

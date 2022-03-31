@@ -415,7 +415,7 @@ int TextField::GetMouseXCharOffset(int point_x)
 	int k = 1;
 	int inx = 0;
 	FontInfoEach info;
-	SkScalar pp = point_x - GetScrolloffsX();
+	SkScalar pp = point_x - GetScrolloffsX()- nShowNumWidth;
 	int nOffset=0;
 	for (;;)
 	{

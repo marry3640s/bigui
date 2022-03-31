@@ -18,7 +18,7 @@
 #include "example/xml/tinyxml2.h"
 //#include "windows.h"
 #include "tools/sk_app/win/Window_win.h"
-
+using namespace CharEncoding;
 #include <imm.h>
 #ifdef _MSC_VER
 #pragma comment(lib, "imm32")
@@ -178,16 +178,32 @@ char* G2U2(const char* gb2312)
 	if (wstr) delete[] wstr;
 	return str;
 }
+
+void HelloWorld::SplitDragCallback(UIWidget* pWidget, SkPoint po)
+{
+	int aa;
+	aa = 5;
+	pSplit->SetPosition((SkScalar)po.x(), 37);
+}
 void HelloWorld::AddTabCallback(UIWidget* pSubTab)
 {
 	/*int a;
 	a = 5;*/
 	TextField *pTextField = new TextField();
 	pTextField->SetPosition(0, 37);
-	pTextField->SetSize(fWindow->width(), fWindow->height() - 37);
+	pTextField->SetSize(fWindow->width()-200, fWindow->height() - 37);
 	pTextField->SetTextFieldStyle(TextField::TextFieldStyle::multi_line | TextField::TextFieldStyle::show_linenum);
 	this->AddWidget(pTextField);
 	pTab->SetTabWidget(pSubTab, pTextField);
+
+	if (pSplit == NULL)
+	{
+		pSplit = new SplitView();
+		pSplit->SetSize(6, fWindow->height() - 37);
+		pSplit->SetPosition(fWindow->width() - 200,  37);
+		pSplit->SetDragCallBack(std::bind(&HelloWorld::SplitDragCallback, this, std::placeholders::_1, std::placeholders::_2));
+		this->AddWidget(pSplit,10);
+	}
 }
 void HelloWorld::TestTextField() {
 
@@ -203,6 +219,7 @@ void HelloWorld::TestTextField() {
 	popMenu->AddMenuItem("paste", 0);
 	popMenu->AppendSeparator();
 	popMenu->AddMenuItem("select all", std::bind(&HelloWorld::PopupMenuCallback, this, std::placeholders::_1));
+	popMenu->AddMenuItem(G2U("´ò¿ªÄ¿Â¼"), std::bind(&HelloWorld::PopupMenuCallback, this, std::placeholders::_1));
 	this->AddWidget(popMenu);
 	popMenu->SetVisible(false);
 
@@ -285,6 +302,7 @@ HelloWorld::HelloWorld(int argc, char** argv, void* platformData)
 	fWindow->setRequestedDisplayParams(DisplayParams());
 	Window_win *ww = (Window_win*)fWindow;
 	pField = NULL;
+	pSplit = NULL;
 	hwnd = ww->GetWindowHwnd();
 	/*SetCapture(ww->GetWindowHwnd());*/
 	/*Sequence sq = Sequence(0, [&]() {

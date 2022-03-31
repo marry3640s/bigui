@@ -23,6 +23,7 @@
 #include "PlistCache.h"
 #include "Menu.h"
 #include "TabBar.h"
+#include "SplitView.h"
 #include "tools/sk_app/Application.h"
 #include "tools/sk_app/Window.h"
 
@@ -60,6 +61,7 @@ public:
     void ClickCallback(UIWidget* pWidget, MouseEvent ev);
 	void PopupMenuCallback(UIWidget* pWidget);
 	void AddTabCallback(UIWidget* pWidget);
+	void SplitDragCallback(UIWidget* pWidget,SkPoint po);
 
 	
 
@@ -91,6 +93,7 @@ private:
 	double fNextTime;
 	TextField* pField;
 	PopupMenu *popMenu;
+	SplitView *pSplit;
 	TabBar *pTab;
 };
 

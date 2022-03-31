@@ -5,6 +5,7 @@ PopupMenu::PopupMenu()
 	SetBackGroundColor(SkColorSetRGB(218, 218, 218));
 	font.setSubpixel(true);
 	font.setSize(18);
+	font.setTypeface(SkTypeface::MakeFromName("simsun", SkFontStyle::Normal()));
 	font_paint.setColor(SkColorSetRGB(0, 0, 0));
 
 	text_height = 25;

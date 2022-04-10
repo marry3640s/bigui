@@ -24,6 +24,7 @@
 #include "Menu.h"
 #include "TabBar.h"
 #include "SplitView.h"
+#include "TreeView.h"
 #include "tools/sk_app/Application.h"
 #include "tools/sk_app/Window.h"
 
@@ -95,6 +96,7 @@ private:
 	PopupMenu *popMenu;
 	SplitView *pSplit;
 	TabBar *pTab;
+	
 };
 
 #endif

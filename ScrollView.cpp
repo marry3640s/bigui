@@ -369,7 +369,7 @@ void ScrollView::UpdateScrollBarInfo()
 		ScrollBarInfo barinfo;
 		barinfo.ContentSize=ContentInfo.height;
 		barinfo.DisplaySize=vert_bar->GetHeight();
-		barinfo.offset=ContentInfo.offs_y;
+		barinfo.offset=/*ContentInfo.offs_y*/GetScrolloffsY();
 		SkScalar ContentMoveMax=barinfo.ContentSize-barinfo.DisplaySize;
 		barinfo.offset=std::max(barinfo.offset,-ContentMoveMax);
 		SetScrolloffsY(barinfo.offset);
@@ -396,7 +396,7 @@ void ScrollView::UpdateScrollBarInfo()
 		ScrollBarInfo barinfo;
 		barinfo.ContentSize=ContentInfo.width;
 		barinfo.DisplaySize=hori_bar->GetWidth();
-		barinfo.offset=ContentInfo.offs_x;
+		barinfo.offset=/*ContentInfo.offs_x*/GetScrolloffsX();
 
 		SkScalar ContentMoveMax=barinfo.ContentSize-barinfo.DisplaySize;
 		barinfo.offset=std::max(barinfo.offset,-ContentMoveMax);

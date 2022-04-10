@@ -27,7 +27,7 @@ using namespace CharEncoding;
 RollImage* roll;
 using namespace sk_app;
 using namespace tinyxml2;
-
+TreeView *pTree;
 ActionManage* gActionManage;
 GameTimerManage* gTimerManage;
 std::vector<UIWidget*> gWidgetList;
@@ -196,18 +196,101 @@ void HelloWorld::AddTabCallback(UIWidget* pSubTab)
 	this->AddWidget(pTextField);
 	pTab->SetTabWidget(pSubTab, pTextField);
 
-	if (pSplit == NULL)
+	
+}
+
+
+#pragma comment (lib, "User32.lib")
+
+DWORD ListAllFileInDirectory(LPSTR szPath,TreeView::node *pNode)
+{
+	char szFilePath[MAX_PATH];
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hListFile;
+	char szFullPath[MAX_PATH];
+
+	// 构造代表子目录和文件夹路径的字符串，使用通配符“*”
+	lstrcpy(szFilePath, szPath);
+	lstrcat(szFilePath, "\\*");
+
+	// 查找第一个文件目录，获得查找句柄
+	hListFile = FindFirstFile(szFilePath, &FindFileData);
+	if (hListFile == INVALID_HANDLE_VALUE)
 	{
-		pSplit = new SplitView();
-		pSplit->SetSize(6, fWindow->height() - 37);
-		pSplit->SetPosition(fWindow->width() - 200,  37);
-		pSplit->SetDragCallBack(std::bind(&HelloWorld::SplitDragCallback, this, std::placeholders::_1, std::placeholders::_2));
-		this->AddWidget(pSplit,10);
+		printf("错误： %d", GetLastError());
+		return 1;
 	}
+	else
+	{
+		do {
+			// 过滤"."和".."，不需要遍历
+			if (lstrcmp(FindFileData.cFileName, TEXT(".")) == 0 ||
+				lstrcmp(FindFileData.cFileName, TEXT("..")) == 0)
+			{
+				continue;
+			}
+
+			// 构造成全路径
+			//wsprintf(szFullPath, "%s\\%s", szPath, FindFileData.cFileName);
+			lstrcpy(szFullPath, szPath);
+			lstrcat(szFullPath, "\\");
+			lstrcat(szFullPath, FindFileData.cFileName);
+
+			//dwTotalFileNum++;
+
+			// 打印
+			printf("\n%s\t", szFullPath);
+
+			//AddTreeItem()
+			// 如果是目录，则递归调用，列举下级目录
+			if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				printf("<DIR>");
+				TreeView::TreeItem item;
+				item.text = FindFileData.cFileName;
+				item.bAllowExpand = true;
+				item.bExpand = false;
+				item.ptag = szFullPath;
+				//item.text = szFullPath;
+			
+				item.nBitmapId = 0;
+				TreeView::node *pp = pTree->AddTreeItem(pNode, item);
+				ListAllFileInDirectory(szFullPath,pp);
+			}
+			else
+			{
+				TreeView::TreeItem item;
+				item.text = FindFileData.cFileName;
+				item.bAllowExpand = false;
+				item.bExpand = false;
+				item.ptag = szFullPath;
+				item.nBitmapId = 0;
+				pTree->AddTreeItem(pNode, item);
+			}
+		} while (FindNextFile(hListFile, &FindFileData));
+	}
+	return 0;
 }
 void HelloWorld::TestTextField() {
 
 	//imeInteraction = imeWindowed;
+
+	pTree = new TreeView();
+	pTree->SetPosition(fWindow->width() - 194, 37);
+	pTree->SetSize(194, fWindow->height() - 37);
+	this->AddWidget(pTree);
+			
+    ListAllFileInDirectory("C:\\bighouse\\BestUI",0);
+	
+
+	if (pSplit == NULL)
+	{
+		pSplit = new SplitView();
+		pSplit->SetSize(6, fWindow->height() - 37);
+		pSplit->SetPosition(fWindow->width() - 200, 37);
+		pSplit->SetDragCallBack(std::bind(&HelloWorld::SplitDragCallback, this, std::placeholders::_1, std::placeholders::_2));
+		this->AddWidget(pSplit, 10);
+	}
 	pTab = new TabBar();
 	
 	

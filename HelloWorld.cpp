@@ -40,7 +40,7 @@ Application* Application::Create(int argc, char** argv, void* platformData) {
 	// std::max();
 }
 HWND hwnd;
-
+int nBitmapIds[5];
 ListView* view;
 SkPoint rightpoint[24] = { {490, 40},   {613, 40},   {736, 40},   {859, 40},   {982, 40},
 						  {1105, 40},  {1105, 114}, {1105, 188}, {1105, 262}, {1105, 336},
@@ -239,21 +239,23 @@ DWORD ListAllFileInDirectory(LPSTR szPath,TreeView::node *pNode)
 			//dwTotalFileNum++;
 
 			// 打印
-			printf("\n%s\t", szFullPath);
+		//	printf("\n%s\t", szFullPath);
 
 			//AddTreeItem()
 			// 如果是目录，则递归调用，列举下级目录
 			if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
-				printf("<DIR>");
+			//	printf("<DIR>");
 				TreeView::TreeItem item;
 				item.text = FindFileData.cFileName;
 				item.bAllowExpand = true;
 				item.bExpand = false;
 				item.ptag = szFullPath;
+				item.nBitmapId[0] = nBitmapIds[0];
+				item.nBitmapId[1] = nBitmapIds[1];
 				//item.text = szFullPath;
 			
-				item.nBitmapId = 0;
+
 				TreeView::node *pp = pTree->AddTreeItem(pNode, item);
 				ListAllFileInDirectory(szFullPath,pp);
 			}
@@ -264,7 +266,9 @@ DWORD ListAllFileInDirectory(LPSTR szPath,TreeView::node *pNode)
 				item.bAllowExpand = false;
 				item.bExpand = false;
 				item.ptag = szFullPath;
-				item.nBitmapId = 0;
+	
+				item.nBitmapId[0] = nBitmapIds[2];
+				item.nBitmapId[1] = nBitmapIds[2];
 				pTree->AddTreeItem(pNode, item);
 			}
 		} while (FindNextFile(hListFile, &FindFileData));
@@ -278,9 +282,22 @@ void HelloWorld::TestTextField() {
 	pTree = new TreeView();
 	pTree->SetPosition(fWindow->width() - 194, 37);
 	pTree->SetSize(194, fWindow->height() - 37);
+	nBitmapIds[0]=pTree->AddBitmap("C:\\skia\\example\\icon\\floder.png");
+	nBitmapIds[1] = pTree->AddBitmap("C:\\skia\\example\\icon\\openfloder.png");
+	nBitmapIds[2] = pTree->AddBitmap("C:\\skia\\example\\icon\\files.png");
+	//nBitmapIds[3] = pTree->AddBitmap("C:\\skia\\example\\icon\\forward.png");
+	//nBitmapIds[4] = pTree->AddBitmap("C:\\skia\\example\\icon\\expland.png");
 	this->AddWidget(pTree);
-			
-    ListAllFileInDirectory("C:\\bighouse\\BestUI",0);
+	TreeView::TreeItem item;
+	char pszPath[] = "C:\\bighouse\\BestUI";
+	item.text = pszPath;
+	item.bAllowExpand = true;
+	item.bExpand = true;
+	item.ptag = pszPath;
+	item.nBitmapId[0] = nBitmapIds[0];
+	item.nBitmapId[1] = nBitmapIds[1];
+	TreeView::node *pNode=pTree->AddTreeItem(0, item);
+    ListAllFileInDirectory(pszPath, pNode);
 	
 
 	if (pSplit == NULL)

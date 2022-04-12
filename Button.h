@@ -50,6 +50,16 @@ public:
 		return nButStatu;
 	}
 
+	void SetParam(void *p)
+	{
+		param = p;
+	}
+
+	void *GetParam()
+	{
+		return param;
+	}
+
 	void SetButStatu(int nStatu)
 	{
 		nButStatu = nStatu;
@@ -68,6 +78,7 @@ public:
 private:
 	int nButStatu;
 	SkString text;
+	void *param;
 	
 };
 

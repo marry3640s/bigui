@@ -5,6 +5,7 @@
 SplitView::SplitView()
 {
 	SetBackGroundColor(SkColorSetRGB(52, 72, 105));
+	bMouseDragged = false;
 	
 }
 void SplitView::Draw(SkCanvas* canvas)

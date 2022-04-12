@@ -105,7 +105,7 @@ void ScrollView::Draw(SkCanvas* canvas)
 		for (auto iter = childlist.begin(); iter != childlist.end(); iter++)
 		{
 		    UIWidget *pChild = *iter;
-		    pChild->SetBound(pChild->GetBound().left()+diff_x, pChild->GetBound().top() + diff_y, pChild->GetWidth()+diff_x + pChild->GetBound().left(), pChild->GetBound().top() + pChild->GetHeight() + diff_y);
+		   pChild->SetBound(pChild->GetBound().left()+diff_x, pChild->GetBound().top() + diff_y, pChild->GetWidth()+diff_x + pChild->GetBound().left(), pChild->GetBound().top() + pChild->GetHeight() + diff_y);
 
 			if (pChild->GetBound().right() >= 0 && pChild->GetBound().left() <= GetDisplayWidth() && pChild->GetBound().bottom() >= 0 && pChild->GetBound().top() <= GetDisplayHeigth())
 			{
@@ -234,6 +234,18 @@ bool ScrollView::OnMouseUp(int x, int y)
 	if (hori_bar != NULL && hori_bar->IsVisible())
 	{
 		hori_bar->OnMouseUp(x, y);
+	}
+
+	SkPoint point = ScrollViewToChildPoint(x, y);
+	for (auto iter = displaylist.begin(); iter != displaylist.end(); iter++)
+	{
+		UIWidget *pChild = *iter;
+		if (point.x() >= pChild->GetBound().left() && point.x() <= pChild->GetBound().right() && point.y() >= pChild->GetBound().top() && point.y() <= pChild->GetBound().bottom())
+		{
+			//printf("x=%d,y=%d,child_x=%d,child_y=%d,left=%f,right=%f,top=%f,bottom=%f\n", x, y, point.x(), point.y(), pChild->GetBound().left(), pChild->GetBound().right(), pChild->GetBound().top(), pChild->GetBound().bottom());
+			return pChild->OnMouseUp(point.x(), point.y());
+		}
+
 	}
 	return false;
 }

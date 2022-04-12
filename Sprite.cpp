@@ -187,6 +187,7 @@ void Sprite::OnMouseMove(int x, int y)
 
 bool  Sprite::OnMouseDown(int x, int y)
 {
+	return false;
 }
 
 //void draw(SkCanvas* canvas) {

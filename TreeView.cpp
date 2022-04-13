@@ -14,7 +14,7 @@ TreeView::TreeView()
 	}
 	pScrollView = new ScrollView();
 	nBitmapIndex = 0;
-	
+	func = 0;
 	
 
 }
@@ -224,7 +224,16 @@ void TreeView::TreeNodeButCallback(UIWidget* pWidget, MouseEvent ev)
 	}
 
 }
-
+void TreeView::SubNodeCallback(UIWidget* pWidget, MouseEvent ev)
+{
+	Button *but = (Button *)pWidget;
+	node *pp = (node *)but->GetParam();
+	if (GetTreeItemCallback() != NULL)
+	{
+		GetTreeItemCallback()(pWidget,pp);
+	}
+	
+}
 void TreeView::AddItemToView(node *pp ,TreeItem item)
 {
 	//node *bb = AllocTreeNode();
@@ -244,6 +253,8 @@ void TreeView::AddItemToView(node *pp ,TreeItem item)
 	but->SetText(item.text);
 	pp->item.pWidget[5] = but;
 	but->SetVisible(false);
+	but->SetParam(pp);
+	but->SetMouseEventCallBack(std::bind(&TreeView::SubNodeCallback, this, std::placeholders::_1, std::placeholders::_2));
 	pScrollView->AddChild(but);
 
 	Sprite *sp = new Sprite(bitmapinfo[item.nBitmapId[0]].c_str());

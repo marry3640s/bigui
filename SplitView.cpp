@@ -54,6 +54,7 @@ bool SplitView::OnMouseDown(int x, int y)
 {
 	if (IsVisible() == false)
 		return false;
+
 	if (GetBound().height() > GetBound().width())
 		nDirectionType = Direction::Vertical;
 	int nMousePos = y;

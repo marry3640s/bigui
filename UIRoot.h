@@ -20,7 +20,7 @@ public:
 	void OnMouseMove(int x, int y);
 	void OnMouseUp(int x,int y);
 
-	void OnMouseWheel(float delta, uint32_t modifiers);
+	void OnMouseWheel(int x, int y, float delta, uint32_t modifiers);
     void OnKey(skui::Key key, uint32_t modifiers);
 	void OnChar(SkUnichar c, uint32_t modifiers);
 

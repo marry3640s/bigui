@@ -43,9 +43,6 @@ public:
 	{
 		AddTabFun = fun;
 	}
-private:
-
-	NormalCallBackFun AddTabFun; 
 	struct tabInfo
 	{
 		//std::string  name;
@@ -53,6 +50,14 @@ private:
 		ButtonHaveClose *but;
 		UIWidget     *pWidget;
 	};
+	std::vector<tabInfo> GetTabList()
+	{
+		return tablist;
+	}
+private:
+
+	NormalCallBackFun AddTabFun; 
+
 
 	std::vector<tabInfo> tablist; 
 	int nTabIdIndex;//tabId用累加的方式

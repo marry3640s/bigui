@@ -12,8 +12,13 @@ using namespace std;
 void UIRoot::DrawAllWidget(SkCanvas* canvas)
 {
 	
-	sort(GetWidgetList()->begin(), GetWidgetList()->end(), [](UIWidget *x, UIWidget *y) {return x->nShowOrder < y->nShowOrder; });
+	//sort(GetWidgetList()->begin(), GetWidgetList()->end(), [](UIWidget *x, UIWidget *y) {return x->nShowOrder < y->nShowOrder; });
+	//sort(GetWidgetList()->begin(), GetWidgetList()->end(), [](UIWidget *x, UIWidget *y)->bool {return x->nShowOrder < y->nShowOrder; });
 
+	GetWidgetList()->sort([](UIWidget *x, UIWidget *y)->bool {
+		return x->nShowOrder < y->nShowOrder;
+	});
+	
 	for (auto iter = GetWidgetList()->begin(); iter != GetWidgetList()->end(); iter++)
 	{
 		DrawWidget(canvas,*iter);
@@ -34,17 +39,25 @@ void UIRoot::OnMouseDown(int x, int y)
 {
 	if (GetWidgetList()->size() == 0)
 		return;
-	for (auto iter = GetWidgetList()->end()-1; ;iter--)
+	/*for (auto iter = GetWidgetList()->end()-1; ;iter--)
 	{
 		UIWidget *pWidget = *iter;
 		if (x >= pWidget->GetBound().left() && x <= pWidget->GetBound().right() && y >= pWidget->GetBound().top() && y <= pWidget->GetBound().bottom() && pWidget->IsVisible())
 		{
 			if (pWidget->OnMouseDown(x, y) == true)
 				break;
-			//return;
 		}
 		if (iter == GetWidgetList()->begin())
 			break;
+	}*/
+	for (std::list<UIWidget *>::reverse_iterator iter = GetWidgetList()->rbegin(); iter != GetWidgetList()->rend(); ++iter) 
+	{
+		UIWidget *pWidget = *iter;
+		if (x >= pWidget->GetBound().left() && x <= pWidget->GetBound().right() && y >= pWidget->GetBound().top() && y <= pWidget->GetBound().bottom() && pWidget->IsVisible())
+		{
+			if (pWidget->OnMouseDown(x, y) == true)
+				break;
+		}
 	}
 }
 
@@ -53,7 +66,7 @@ void UIRoot::OnMouseUp(int x, int y)
 {
 	if (GetWidgetList()->size() == 0)
 		return;
-	for (auto iter = GetWidgetList()->end()-1; ;iter--)
+	/*for (auto iter = GetWidgetList()->end()-1; ;iter--)
 	{
 		UIWidget *pWidget = *iter;
 		
@@ -62,12 +75,13 @@ void UIRoot::OnMouseUp(int x, int y)
 		
 		if (iter == GetWidgetList()->begin())
 			break;
-	}
-	/*for (auto iter = GetWidgetList()->begin(); iter != GetWidgetList()->end(); iter++)
+	}*/
+	for (std::list<UIWidget *>::reverse_iterator iter = GetWidgetList()->rbegin(); iter != GetWidgetList()->rend(); ++iter)
 	{
 		UIWidget *pWidget = *iter;
-		pWidget->OnMouseUp(x, y);
-	}*/
+		if (pWidget->OnMouseUp(x, y) == true)
+			break;
+	}
 }
 
 
@@ -75,29 +89,44 @@ void  UIRoot::OnMouseMove(int x, int y)
 {
 	if (GetWidgetList()->size() == 0)
 		return;
-	for (auto iter = GetWidgetList()->end() - 1; ; iter--)
+	/*for (auto iter = GetWidgetList()->end() - 1; ; iter--)
 	{
 		UIWidget *pWidget = *iter;
 		pWidget->OnMouseMove(x, y);
-	/*	if (x >= pWidget->GetBound().left() && x <= pWidget->GetBound().right() && y >= pWidget->GetBound().top() && y <= pWidget->GetBound().bottom())
-			return;*/
+	
 		if (iter == GetWidgetList()->begin())
 			break;
+	}*/
+	for (std::list<UIWidget *>::reverse_iterator iter = GetWidgetList()->rbegin(); iter != GetWidgetList()->rend(); ++iter)
+	{
+		UIWidget *pWidget = *iter;
+		pWidget->OnMouseMove(x, y);
+		
 	}
 }
 
-void  UIRoot::OnMouseWheel(float delta, uint32_t modifier)
+
+void  UIRoot::OnMouseWheel(int x, int y, float delta, uint32_t modifier)
 {
 	if (GetWidgetList()->size() == 0)
 		return;
-	for (auto iter = GetWidgetList()->end() - 1; ; iter--)
+	//for (auto iter = GetWidgetList()->end() - 1; ; iter--)
+	//{
+	//	UIWidget *pWidget = *iter;
+	//	pWidget->OnMouseWheel(delta, modifier);
+	//	/*if (x >= pWidget->GetBound().left() && x <= pWidget->GetBound().right() && y >= pWidget->GetBound().top() && y <= pWidget->GetBound().bottom())
+	//		return;*/
+	//	if (iter == GetWidgetList()->begin())
+	//		break;
+	//}
+	for (std::list<UIWidget *>::reverse_iterator iter = GetWidgetList()->rbegin(); iter != GetWidgetList()->rend(); ++iter)
 	{
 		UIWidget *pWidget = *iter;
-		pWidget->OnMouseWheel(delta, modifier);
-		/*if (x >= pWidget->GetBound().left() && x <= pWidget->GetBound().right() && y >= pWidget->GetBound().top() && y <= pWidget->GetBound().bottom())
-			return;*/
-		if (iter == GetWidgetList()->begin())
-			break;
+		if (x >= pWidget->GetBound().left() && x <= pWidget->GetBound().right() && y >= pWidget->GetBound().top() && y <= pWidget->GetBound().bottom() && pWidget->IsVisible())
+		{
+			pWidget->OnMouseWheel(delta, modifier);
+		}
+
 	}
 }
 
@@ -105,14 +134,18 @@ void UIRoot::OnKey(skui::Key key, uint32_t modifiers)
 {
 	if ( GetWidgetList()->size() == 0)
 		return;
-	for (auto iter = GetWidgetList()->end() - 1; ; iter--)
+	/*for (auto iter = GetWidgetList()->end() - 1; ; iter--)
 	{
 		UIWidget *pWidget = *iter;
 		pWidget->OnKey(key, modifiers);
-		/*if (x >= pWidget->GetBound().left() && x <= pWidget->GetBound().right() && y >= pWidget->GetBound().top() && y <= pWidget->GetBound().bottom())
-			return;*/
+		
 		if (iter == GetWidgetList()->begin())
 			break;
+	}*/
+	for (std::list<UIWidget *>::reverse_iterator iter = GetWidgetList()->rbegin(); iter != GetWidgetList()->rend(); ++iter)
+	{
+		UIWidget *pWidget = *iter;
+		pWidget->OnKey(key, modifiers);
 	}
 }
 
@@ -120,24 +153,34 @@ void UIRoot::OnChar(SkUnichar c, uint32_t modifiers)
 {
 	if (GetWidgetList()->size() == 0)
 		return;
-	for (auto iter = GetWidgetList()->end() - 1; ; iter--)
+	/*for (auto iter = GetWidgetList()->end() - 1; ; iter--)
 	{
 		UIWidget *pWidget = *iter;
 		pWidget->OnChar(c, modifiers);
 		if (iter == GetWidgetList()->begin())
 			break;
+	}*/
+	for (std::list<UIWidget *>::reverse_iterator iter = GetWidgetList()->rbegin(); iter != GetWidgetList()->rend(); ++iter)
+	{
+		UIWidget *pWidget = *iter;
+		pWidget->OnChar(c, modifiers);
 	}
 }
 int UIRoot::OnIMEMsg(HWND hwnd, unsigned int iMessage, unsigned int wParam, int lParam)
 {
 	if (GetWidgetList()->size() == 0)
 		return false;
-	for (auto iter = GetWidgetList()->end() - 1; ; iter--)
+	/*for (auto iter = GetWidgetList()->end() - 1; ; iter--)
 	{
 		UIWidget *pWidget = *iter;
 		pWidget->OnIMEMsg(hwnd, iMessage,wParam,lParam);
 		if (iter == GetWidgetList()->begin())
 			break;
+	}*/
+	for (std::list<UIWidget *>::reverse_iterator iter = GetWidgetList()->rbegin(); iter != GetWidgetList()->rend(); ++iter)
+	{
+		UIWidget *pWidget = *iter;
+		pWidget->OnIMEMsg(hwnd, iMessage, wParam, lParam);
 	}
 	return true;
 }

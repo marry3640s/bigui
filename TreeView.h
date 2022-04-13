@@ -19,7 +19,7 @@ public:
 	bool OnMouseUp(int x, int y) override;
 	void OnMouseWheel(float delta, uint32_t modifier);
 
-
+	
 
 	struct TreeItem {
 		char *text;
@@ -36,13 +36,14 @@ public:
 		node *child;
 		TreeItem item;
 	};
-
+	typedef std::function<void(UIWidget *p, TreeView::node *node)> TreeNodeItemCallBack;
 	int AddBitmap(char *pBitmapPath);
 	node *AllocTreeNode();
 	node *AddTreeItem(node *parent,TreeItem item);//Ìí¼Ótreeitem
 
 	void AddItemToView(node *pp,TreeItem item);
 	void TreeNodeButCallback(UIWidget* pWidget, MouseEvent ev);
+	void SubNodeCallback(UIWidget* pWidget, MouseEvent ev);
 	/*struct BitmapInfo {
 		int nId;
 		std::string path;
@@ -50,10 +51,17 @@ public:
 
 	std::vector<std::string> bitmapinfo;
 
-
+	void SetTreeItemCallback(TreeNodeItemCallBack param)
+	{
+		func = param;
+	}
+	TreeNodeItemCallBack GetTreeItemCallback()
+	{
+		return func;
+	}
 public:
 
-
+	TreeNodeItemCallBack func;
 	node *root;
 	ScrollView *pScrollView;
 	int nBitmapIndex;

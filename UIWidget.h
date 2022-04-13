@@ -32,7 +32,7 @@ typedef std::function<void(UIWidget *p)> NormalCallBackFun;
 
 extern  ActionManage *gActionManage;
 extern  GameTimerManage *gTimerManage;
-extern std::vector<UIWidget *> gWidgetList;
+extern std::list<UIWidget *> gWidgetList;
 class UIShard {
 public:
 	UIShard();
@@ -49,14 +49,14 @@ public:
 	{
 		return pTimerManage;
 	}
-	std::vector<UIWidget *> * GetWidgetList()
+	std::list<UIWidget *> * GetWidgetList()
 	{
 		return pWidgetList;
 	}
 private:
 	ActionManage *pActionManage;
 	GameTimerManage *pTimerManage;
-	std::vector<UIWidget *> *pWidgetList;
+	std::list<UIWidget *> *pWidgetList;
 };
 
 class UIWidget :public UIShard{
@@ -161,6 +161,16 @@ public:
 	{
 		return background;
 	}
+
+	void SetParam(void *p)
+	{
+		param = p;
+	}
+
+	void *GetParam()
+	{
+		return param;
+	}
 private:
 	//SkPoint point;
 	SkRect rect;
@@ -172,4 +182,5 @@ private:
 	SkScalar fScrolloffsY;
 	SkScalar fScrolloffsX;
 	SkColor background;
+	void *param;
 };

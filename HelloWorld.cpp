@@ -30,7 +30,7 @@ using namespace tinyxml2;
 TreeView *pTree;
 ActionManage* gActionManage;
 GameTimerManage* gTimerManage;
-std::vector<UIWidget*> gWidgetList;
+std::list<UIWidget*> gWidgetList;
 Application* Application::Create(int argc, char** argv, void* platformData) {
 	gActionManage = new ActionManage();
 	gTimerManage = new GameTimerManage();
@@ -275,6 +275,58 @@ DWORD ListAllFileInDirectory(LPSTR szPath,TreeView::node *pNode)
 	}
 	return 0;
 }
+
+void HelloWorld::TreeItemCallback(UIWidget* pWidget, TreeView::node *pNode)
+{
+	int a;
+	a = 6;
+
+	std::vector<TabBar::tabInfo> tablist = pTab->GetTabList();
+
+	for (auto iter = tablist.begin(); iter != tablist.end(); iter++)
+	{
+		char *pTag = (char *)iter->but->GetParam();
+		if (memcmp(pTag, pNode->item.ptag, strlen(pTag)) == 0)
+		{
+			//pTab->SetTabWidget()
+			pTab->MouseDownCallback(iter->but);
+			return;
+		}
+
+	}
+	TextField *pTextField = new TextField();
+	pTextField->SetPosition(0, 37);
+	pTextField->SetSize(fWindow->width() - 200, fWindow->height() - 37);
+	pTextField->SetTextFieldStyle(TextField::TextFieldStyle::multi_line | TextField::TextFieldStyle::show_linenum);
+	this->AddWidget(pTextField);
+	UIWidget *pSubTab= pTab->AddTab(pNode->item.text);
+	pTab->SetTabWidget(pSubTab, pTextField);
+	pSubTab->SetParam(pNode->item.ptag);
+	pTab->MouseDownCallback(pSubTab);
+
+	FILE *fp;
+	char str[8192];
+
+	
+	fp = fopen(pNode->item.ptag, "r");
+	
+	if (fp == NULL) {
+		return;
+	}
+	int k = 0;
+	//644-650
+	while (fgets(str, 8192, fp) != NULL /*&&k<60000*/) {
+		/* 向标准输出 stdout 写入内容 */
+		//puts(str);
+		char *pText = G2U2(str);
+		textline info;
+		info.nHeight = TEXT_HEIGHT;
+		info.txtbuf = pText;
+		pTextField->insertline(info);
+		delete pText;
+		k++;
+	}
+}
 void HelloWorld::TestTextField() {
 
 	//imeInteraction = imeWindowed;
@@ -290,6 +342,7 @@ void HelloWorld::TestTextField() {
 	this->AddWidget(pTree);
 	TreeView::TreeItem item;
 	char pszPath[] = "C:\\bighouse\\BestUI";
+	//char pszPath[] = "C:\\skia";
 	item.text = pszPath;
 	item.bAllowExpand = true;
 	item.bExpand = true;
@@ -298,6 +351,8 @@ void HelloWorld::TestTextField() {
 	item.nBitmapId[1] = nBitmapIds[1];
 	TreeView::node *pNode=pTree->AddTreeItem(0, item);
     ListAllFileInDirectory(pszPath, pNode);
+
+	pTree->SetTreeItemCallback(std::bind(&HelloWorld::TreeItemCallback, this, std::placeholders::_1, std::placeholders::_2));
 	
 
 	if (pSplit == NULL)
@@ -306,7 +361,7 @@ void HelloWorld::TestTextField() {
 		pSplit->SetSize(6, fWindow->height() - 37);
 		pSplit->SetPosition(fWindow->width() - 200, 37);
 		pSplit->SetDragCallBack(std::bind(&HelloWorld::SplitDragCallback, this, std::placeholders::_1, std::placeholders::_2));
-		this->AddWidget(pSplit, 10);
+		this->AddWidget(pSplit, 1000);
 	}
 	pTab = new TabBar();
 	
@@ -401,6 +456,7 @@ HelloWorld::HelloWorld(int argc, char** argv, void* platformData)
 	fWindow = Window::CreateNativeWindow(platformData);
 	fWindow->setRequestedDisplayParams(DisplayParams());
 	Window_win *ww = (Window_win*)fWindow;
+
 	pField = NULL;
 	pSplit = NULL;
 	hwnd = ww->GetWindowHwnd();
@@ -604,8 +660,14 @@ bool HelloWorld::onMouse(int x, int y, skui::InputState state, skui::ModifierKey
 	return true;
 }
 
-bool HelloWorld::onMouseWheel(float delta, skui::ModifierKey modifiers) {
-	OnMouseWheel(delta, (uint32_t)modifiers);
+bool HelloWorld::onMouseWheel(int x, int y, float delta, skui::ModifierKey modifiers) {
+
+	
+	POINT point;
+	point.x =x;
+	point.y =y;
+	ScreenToClient(hwnd, &point);
+	OnMouseWheel(point.x, point.y,delta, (uint32_t)modifiers);
 	return true;
 }
 

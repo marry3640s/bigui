@@ -54,7 +54,7 @@ public:
     virtual bool onMouseWheel(float delta, skui::ModifierKey) { return false; }*/
     bool onMouse(int x, int y, skui::InputState state, skui::ModifierKey) override;
 	bool onRMouse(int x, int y, skui::InputState state, skui::ModifierKey) override;
-    bool onMouseWheel(float delta, skui::ModifierKey) override;
+    bool onMouseWheel(int x, int y, float delta, skui::ModifierKey) override;
 
     int onIMEMessage(unsigned int nMsg, unsigned int wparam, int lparam) override;
 
@@ -63,7 +63,7 @@ public:
 	void PopupMenuCallback(UIWidget* pWidget);
 	void AddTabCallback(UIWidget* pWidget);
 	void SplitDragCallback(UIWidget* pWidget,SkPoint po);
-
+	void TreeItemCallback(UIWidget* pWidget, TreeView::node *pNode);
 	
 
     void Init();

@@ -47,12 +47,12 @@ TextField::TextField()
 	temp = bounds.height();
 	
 	nHei = temp;*/
-	if (line.size() == 0)
+	/*if (line.size() == 0)
 	{
 		textline info;
 		info.nHeight = TEXT_HEIGHT;
 		line.push_back(info);
-	}
+	}*/
 }
 TextField::~TextField() 
 {

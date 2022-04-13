@@ -181,9 +181,19 @@ char* G2U2(const char* gb2312)
 
 void HelloWorld::SplitDragCallback(UIWidget* pWidget, SkPoint po)
 {
-	int aa;
-	aa = 5;
 	pSplit->SetPosition((SkScalar)po.x(), 37);
+	std::vector<TabBar::tabInfo> tablist = pTab->GetTabList();
+
+	for (auto iter = tablist.begin(); iter != tablist.end(); iter++)
+	{
+		if (iter->pWidget != NULL)
+		{
+			//iter->pWidget->SetPosition((SkScalar)po.x(), 37);
+			iter->pWidget->SetSize(po.x() /*- pSplit->GetWidth()*/, fWindow->height() - 37);
+		}
+	}
+	pTree->SetPosition(po.x(), 37);
+	pTree->SetSize(fWindow->width() - po.x() /*- pSplit->GetWidth()*/, fWindow->height() - 37);
 }
 void HelloWorld::AddTabCallback(UIWidget* pSubTab)
 {
@@ -296,7 +306,7 @@ void HelloWorld::TreeItemCallback(UIWidget* pWidget, TreeView::node *pNode)
 	}
 	TextField *pTextField = new TextField();
 	pTextField->SetPosition(0, 37);
-	pTextField->SetSize(fWindow->width() - 200, fWindow->height() - 37);
+	pTextField->SetSize(pSplit->GetBound().left(), fWindow->height() - 37);
 	pTextField->SetTextFieldStyle(TextField::TextFieldStyle::multi_line | TextField::TextFieldStyle::show_linenum);
 	this->AddWidget(pTextField);
 	UIWidget *pSubTab= pTab->AddTab(pNode->item.text);
@@ -362,6 +372,10 @@ void HelloWorld::TestTextField() {
 		pSplit->SetPosition(fWindow->width() - 200, 37);
 		pSplit->SetDragCallBack(std::bind(&HelloWorld::SplitDragCallback, this, std::placeholders::_1, std::placeholders::_2));
 		this->AddWidget(pSplit, 1000);
+	}
+	else
+	{
+		printf("pSplit!=NULL\n");
 	}
 	pTab = new TabBar();
 	
@@ -459,6 +473,7 @@ HelloWorld::HelloWorld(int argc, char** argv, void* platformData)
 
 	pField = NULL;
 	pSplit = NULL;
+	pTab = NULL;
 	hwnd = ww->GetWindowHwnd();
 	/*SetCapture(ww->GetWindowHwnd());*/
 	/*Sequence sq = Sequence(0, [&]() {
@@ -678,6 +693,32 @@ void HelloWorld::onResize(int width, int height)
 		pField->SetPosition(0, 0);
 		pField->SetSize(width, height);
 	}*/
+	if (pTab != NULL)
+	{
+		std::vector<TabBar::tabInfo> tablist = pTab->GetTabList();
+		for (auto iter = tablist.begin(); iter != tablist.end(); iter++)
+		{
+			if (iter->pWidget != NULL)
+			{
+				//iter->pWidget->SetPosition((SkScalar)po.x(), 37);
+				iter->pWidget->SetSize(width - pSplit->GetBound().width() - pTree->GetWidth(), fWindow->height() - 37);
+			}
+		}
+	}
+	if (pSplit != NULL)
+	{
+		pSplit->SetPosition(width  - pTree->GetWidth()- pSplit->GetBound().width(), 37);
+		pSplit->SetSize(6, height - 37);
+	}
+	if (pTree != NULL)
+	{
+		pTree->SetPosition(pSplit->GetBound().right(), 37);
+		pTree->SetSize(width - pSplit->GetBound().right() /*- pSplit->GetWidth()*/, fWindow->height() - 37);
+	}
+	if (pTab != NULL)
+	{
+		pTab->SetSize(width, 37);
+	}
 }
 
 int HelloWorld::onIMEMessage(unsigned int iMessage, unsigned int wParam, int lParam)

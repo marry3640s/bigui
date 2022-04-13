@@ -34,6 +34,7 @@ TextField::TextField()
 	ResetCurUndo();
 
 	nShowNumWidth = 0;
+	SetMouseDragged(false);
 
 	/*char aa = 'a';
 	char tt = 'A';

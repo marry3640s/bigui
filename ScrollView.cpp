@@ -189,7 +189,10 @@ void ScrollView::OnMouseMove(int x, int y)
 	for (auto iter = displaylist.begin(); iter != displaylist.end(); iter++)
 	{
 		UIWidget *pChild = *iter;
-		pChild->OnMouseMove(point.x(), point.y());
+		if (pChild->IsVisible() == true)
+		{
+			pChild->OnMouseMove(point.x(), point.y());
+		}
 	}
 
 	
@@ -212,10 +215,13 @@ bool  ScrollView::OnMouseDown(int x, int y)
 	for (auto iter = displaylist.begin(); iter != displaylist.end(); iter++)
 	{
 		UIWidget *pChild = *iter;
-		if (point.x() >= pChild->GetBound().left() && point.x() <= pChild->GetBound().right() && point.y() >= pChild->GetBound().top() && point.y() <= pChild->GetBound().bottom())
+		if (pChild->IsVisible() == true)
 		{
-			//printf("x=%d,y=%d,child_x=%d,child_y=%d,left=%f,right=%f,top=%f,bottom=%f\n", x, y, point.x(), point.y(), pChild->GetBound().left(), pChild->GetBound().right(), pChild->GetBound().top(), pChild->GetBound().bottom());
-			return pChild->OnMouseDown(point.x(), point.y());
+			if (point.x() >= pChild->GetBound().left() && point.x() <= pChild->GetBound().right() && point.y() >= pChild->GetBound().top() && point.y() <= pChild->GetBound().bottom())
+			{
+				//printf("x=%d,y=%d,child_x=%d,child_y=%d,left=%f,right=%f,top=%f,bottom=%f\n", x, y, point.x(), point.y(), pChild->GetBound().left(), pChild->GetBound().right(), pChild->GetBound().top(), pChild->GetBound().bottom());
+				return pChild->OnMouseDown(point.x(), point.y());
+			}
 		}
 		
 	}
@@ -240,10 +246,13 @@ bool ScrollView::OnMouseUp(int x, int y)
 	for (auto iter = displaylist.begin(); iter != displaylist.end(); iter++)
 	{
 		UIWidget *pChild = *iter;
-		if (point.x() >= pChild->GetBound().left() && point.x() <= pChild->GetBound().right() && point.y() >= pChild->GetBound().top() && point.y() <= pChild->GetBound().bottom())
+		if (pChild->IsVisible() == true)
 		{
-			//printf("x=%d,y=%d,child_x=%d,child_y=%d,left=%f,right=%f,top=%f,bottom=%f\n", x, y, point.x(), point.y(), pChild->GetBound().left(), pChild->GetBound().right(), pChild->GetBound().top(), pChild->GetBound().bottom());
-			return pChild->OnMouseUp(point.x(), point.y());
+			if (point.x() >= pChild->GetBound().left() && point.x() <= pChild->GetBound().right() && point.y() >= pChild->GetBound().top() && point.y() <= pChild->GetBound().bottom())
+			{
+				//printf("x=%d,y=%d,child_x=%d,child_y=%d,left=%f,right=%f,top=%f,bottom=%f\n", x, y, point.x(), point.y(), pChild->GetBound().left(), pChild->GetBound().right(), pChild->GetBound().top(), pChild->GetBound().bottom());
+				return pChild->OnMouseUp(point.x(), point.y());
+			}
 		}
 
 	}

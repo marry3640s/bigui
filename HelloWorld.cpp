@@ -362,6 +362,16 @@ void HelloWorld::TestTextField() {
 	TreeView::node *pNode=pTree->AddTreeItem(0, item);
     ListAllFileInDirectory(pszPath, pNode);
 
+	char pszPath2[] = "C:\\bighouse\\bigui";
+	item.text = pszPath2;
+	item.bAllowExpand = true;
+	item.bExpand = true;
+	item.ptag = pszPath2;
+	item.nBitmapId[0] = nBitmapIds[0];
+	item.nBitmapId[1] = nBitmapIds[1];
+	TreeView::node *pNode2 = pTree->AddTreeItem(0, item);
+	ListAllFileInDirectory(pszPath2, pNode2);
+
 	pTree->SetTreeItemCallback(std::bind(&HelloWorld::TreeItemCallback, this, std::placeholders::_1, std::placeholders::_2));
 	
 

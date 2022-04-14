@@ -330,7 +330,7 @@ void HelloWorld::TreeItemCallback(UIWidget* pWidget, TreeView::node *pNode)
 		//puts(str);
 		char *pText = G2U2(str);
 		textline info;
-		info.nHeight = TEXT_HEIGHT;
+		info.nHeight = 18;
 		info.txtbuf = pText;
 		pTextField->insertline(info);
 		delete pText;
@@ -435,7 +435,7 @@ void HelloWorld::TestTextField() {
 		//puts(str);
 		char *pText=G2U2(str);
 		textline info;
-		info.nHeight = TEXT_HEIGHT;
+		info.nHeight = 18;
 		info.txtbuf = pText;
 		pField->insertline(info);
 		delete pText;

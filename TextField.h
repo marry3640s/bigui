@@ -51,7 +51,7 @@ struct undoInfo {
 	UndoState state; //删除
 };
 
-#define TEXT_HEIGHT 17
+//#define TEXT_HEIGHT 17
 class TextField : public UIWidget , public ScrollBarController {
 public:
     TextField();
@@ -66,7 +66,7 @@ public:
     void OnChar(SkUnichar c, uint32_t modifiers) override;
 	int  OnIMEMsg(HWND hwnd, unsigned int iMessage, unsigned int wParam, int lParam) override;
 
-
+	
     void DrawCursor(SkCanvas* canvas);
 	SkScalar GetCursorX();//获取当前光标的X位置
 	SkScalar GetCursorY();//获取当前光标的Y位置
@@ -95,7 +95,7 @@ public:
 	void UpdateScrollBarInfo();
     SkPoint ScrollViewToChildPoint(int x, int y) {
         SkPoint point;
-        point.set(x - GetBound().left(), y - GetBound().top());
+        point.set(x - GetBound().left()- nShowNumWidth, y - GetBound().top());
         return point;
     }
 	void SetMouseDragged(bool bValue) {
@@ -148,4 +148,6 @@ private:
 	bool bSelFlag;
 	int nTextFieldStyle;
 	int nShowNumWidth;
+
+	int nLineHeight;//每行高度
 };

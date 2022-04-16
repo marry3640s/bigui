@@ -7,6 +7,7 @@ UIWidget::UIWidget()
 	fDegress = 0;
 	SetScrolloffsX(0);
 	SetScrolloffsY(0);
+	SetBound(0, 0, 0, 0);
 	background = SkColorSetRGB(255, 255, 255);
 }
 void UIWidget::SetPosition(SkScalar x, SkScalar y)

@@ -189,11 +189,11 @@ void HelloWorld::SplitDragCallback(UIWidget* pWidget, SkPoint po)
 		if (iter->pWidget != NULL)
 		{
 			//iter->pWidget->SetPosition((SkScalar)po.x(), 37);
-			iter->pWidget->SetSize(po.x() /*- pSplit->GetWidth()*/, fWindow->height() - 37);
+			iter->pWidget->SetSize(po.x() /*- pSplit->GetWidth()*/, fWindow->height() - 37-pStatusBar->GetHeight());
 		}
 	}
 	pTree->SetPosition(po.x(), 37);
-	pTree->SetSize(fWindow->width() - po.x() /*- pSplit->GetWidth()*/, fWindow->height() - 37);
+	pTree->SetSize(fWindow->width() - po.x() /*- pSplit->GetWidth()*/, fWindow->height() - 37 - pStatusBar->GetHeight());
 }
 void HelloWorld::AddTabCallback(UIWidget* pSubTab)
 {
@@ -201,7 +201,7 @@ void HelloWorld::AddTabCallback(UIWidget* pSubTab)
 	a = 5;*/
 	TextField *pTextField = new TextField();
 	pTextField->SetPosition(0, 37);
-	pTextField->SetSize(fWindow->width()-200, fWindow->height() - 37);
+	pTextField->SetSize(fWindow->width()-200, fWindow->height() - 37 - pStatusBar->GetHeight());
 	pTextField->SetTextFieldStyle(TextField::TextFieldStyle::multi_line | TextField::TextFieldStyle::show_linenum);
 	this->AddWidget(pTextField);
 	pTab->SetTabWidget(pSubTab, pTextField);
@@ -306,7 +306,7 @@ void HelloWorld::TreeItemCallback(UIWidget* pWidget, TreeView::node *pNode)
 	}
 	TextField *pTextField = new TextField();
 	pTextField->SetPosition(0, 37);
-	pTextField->SetSize(pSplit->GetBound().left(), fWindow->height() - 37);
+	pTextField->SetSize(pSplit->GetBound().left(), fWindow->height() - 37 - pStatusBar->GetHeight());
 	pTextField->SetTextFieldStyle(TextField::TextFieldStyle::multi_line | TextField::TextFieldStyle::show_linenum);
 	this->AddWidget(pTextField);
 	UIWidget *pSubTab= pTab->AddTab(pNode->item.text);
@@ -340,10 +340,14 @@ void HelloWorld::TreeItemCallback(UIWidget* pWidget, TreeView::node *pNode)
 void HelloWorld::TestTextField() {
 
 	//imeInteraction = imeWindowed;
+	pStatusBar = new StatusBar();
+	pStatusBar->SetPosition(0,fWindow->height()-23);
+	pStatusBar->SetSize(fWindow->width(), 23);
+	this->AddWidget(pStatusBar);
 
 	pTree = new TreeView();
 	pTree->SetPosition(fWindow->width() - 194, 37);
-	pTree->SetSize(194, fWindow->height() - 37);
+	pTree->SetSize(194, fWindow->height() - 37-pStatusBar->GetHeight());
 	nBitmapIds[0]=pTree->AddBitmap("C:\\skia\\example\\icon\\floder.png");
 	nBitmapIds[1] = pTree->AddBitmap("C:\\skia\\example\\icon\\openfloder.png");
 	nBitmapIds[2] = pTree->AddBitmap("C:\\skia\\example\\icon\\files.png");
@@ -378,7 +382,8 @@ void HelloWorld::TestTextField() {
 	if (pSplit == NULL)
 	{
 		pSplit = new SplitView();
-		pSplit->SetSize(6, fWindow->height() - 37);
+		printf("pSplit set size=%d,%f,fwindows_height=%d\n", 6, fWindow->height() - 37 - pStatusBar->GetHeight(), fWindow->height());
+		pSplit->SetSize(6, fWindow->height() - 37-pStatusBar->GetHeight());
 		pSplit->SetPosition(fWindow->width() - 200, 37);
 		pSplit->SetDragCallBack(std::bind(&HelloWorld::SplitDragCallback, this, std::placeholders::_1, std::placeholders::_2));
 		this->AddWidget(pSplit, 1000);
@@ -413,6 +418,7 @@ void HelloWorld::TestTextField() {
 	this->AddWidget(pTab);
 
 
+	
 	return;
 
 	FILE *fp;
@@ -484,6 +490,7 @@ HelloWorld::HelloWorld(int argc, char** argv, void* platformData)
 	pField = NULL;
 	pSplit = NULL;
 	pTab = NULL;
+	pStatusBar = NULL;
 	hwnd = ww->GetWindowHwnd();
 	/*SetCapture(ww->GetWindowHwnd());*/
 	/*Sequence sq = Sequence(0, [&]() {
@@ -711,23 +718,30 @@ void HelloWorld::onResize(int width, int height)
 			if (iter->pWidget != NULL)
 			{
 				//iter->pWidget->SetPosition((SkScalar)po.x(), 37);
-				iter->pWidget->SetSize(width - pSplit->GetBound().width() - pTree->GetWidth(), fWindow->height() - 37);
+				iter->pWidget->SetSize(width - pSplit->GetBound().width() - pTree->GetWidth(), fWindow->height() - 37-pStatusBar->GetHeight());
 			}
 		}
 	}
 	if (pSplit != NULL)
 	{
-		pSplit->SetPosition(width  - pTree->GetWidth()- pSplit->GetBound().width(), 37);
-		pSplit->SetSize(6, height - 37);
+		printf("pSplit set size=%d,%f,fwindows_height=%d\n", 6, fWindow->height() - 37 - pStatusBar->GetHeight(), fWindow->height());
+		pSplit->SetPosition(width - pTree->GetWidth() - pSplit->GetBound().width(), 37);
+		pSplit->SetSize(6, height - 37 - pStatusBar->GetHeight());
 	}
 	if (pTree != NULL)
 	{
 		pTree->SetPosition(pSplit->GetBound().right(), 37);
-		pTree->SetSize(width - pSplit->GetBound().right() /*- pSplit->GetWidth()*/, fWindow->height() - 37);
+		pTree->SetSize(width - pSplit->GetBound().right() /*- pSplit->GetWidth()*/, fWindow->height() - 37-pStatusBar->GetHeight());
 	}
+	
 	if (pTab != NULL)
 	{
 		pTab->SetSize(width, 37);
+	}
+	if (pStatusBar != NULL)
+	{
+		pStatusBar->SetPosition(0, fWindow->height() - 23);
+		pStatusBar->SetSize(fWindow->width(), 23);
 	}
 }
 

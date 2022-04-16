@@ -183,14 +183,15 @@ void TextField::Draw(SkCanvas* canvas)
 		//计算显示行数的宽度
 		int nMaxNum = nIndex + GetDisplayHeigth() / nLineHeight + 1;
 		SkString str = SkStringPrintf("%d", nMaxNum);
-		font.measureText(str.c_str(), str.size(), SkTextEncoding::kUTF8, &bounds, &paint);
-		nShowNumWidth = bounds.width() + 10;
-
+		SkScalar textWidth=font.measureText(str.c_str(), str.size(), SkTextEncoding::kUTF8, &bounds, &paint);
+		nShowNumWidth = textWidth + 10;
+		
 		auto context_num = canvas->recordingContext();
 		SkImageInfo info_num = SkImageInfo::MakeN32((SkScalar)nShowNumWidth, GetHeight(), kOpaque_SkAlphaType);
 		gpuSurface_num=SkSurface::MakeRenderTarget(context_num, SkBudgeted::kNo, info_num);
 		surfaceCanvas_num = gpuSurface_num->getCanvas();
-		paint.setColor(GetBackGroundColor());
+		//paint.setColor(GetBackGroundColor());
+		paint.setColor(SkColorSetARGB(0xFF, 240, 240, 240));
 		surfaceCanvas_num->drawRect(SkRect{ 0, 0, (SkScalar)nShowNumWidth, GetHeight() }, paint);
 	}
 
@@ -221,7 +222,7 @@ void TextField::Draw(SkCanvas* canvas)
 			paint_num.setColor(SkColorSetARGB(0xFF, 45, 145, 175));
 			SkString str = SkStringPrintf("%d", 1 + k);
 			surfaceCanvas_num->drawSimpleText(str.c_str(), str.size(), SkTextEncoding::kUTF8,
-				9, ins_y, font, paint_num);
+				8, ins_y, font, paint_num);
 		}
 		//char *text = G2U(line[k].txtbuf.data());
 		char *text = line[k].txtbuf.data();
@@ -241,7 +242,11 @@ void TextField::Draw(SkCanvas* canvas)
 
 	DrawCursor(surfaceCanvas);
 
-	
+	UpdateScrollBarInfo();
+	if (vert_bar != NULL)
+		vert_bar->Draw(surfaceCanvas);
+	if (hori_bar != NULL)
+		hori_bar->Draw(surfaceCanvas);
 
 	sk_sp<SkImage> image(gpuSurface->makeImageSnapshot());
 	canvas->drawImage(image, GetBound().left()+ nShowNumWidth, GetBound().top());
@@ -251,11 +256,7 @@ void TextField::Draw(SkCanvas* canvas)
 		canvas->drawImage(image2, GetBound().left(), GetBound().top());
 	}
 
-	UpdateScrollBarInfo();
-	if (vert_bar != NULL)
-		vert_bar->Draw(canvas);
-	if (hori_bar != NULL)
-		hori_bar->Draw(canvas);
+	
 	
 }
 
@@ -325,10 +326,11 @@ void TextField::DrawCursor(SkCanvas* canvas)
 
 void TextField::OnMouseMove(int x, int y) 
 {
+	SkPoint point = ScrollViewToChildPoint(x, y);
     if (vert_bar != NULL && vert_bar->IsVisible())
-		vert_bar->OnMouseMove(x, y);
+		vert_bar->OnMouseMove(point.x(), point.y());
     if (hori_bar != NULL && hori_bar->IsVisible()) 
-		hori_bar->OnMouseMove(x, y);
+		hori_bar->OnMouseMove(point.x(), point.y());
 
 	if (GetMouseDragged())
 	{
@@ -336,7 +338,7 @@ void TextField::OnMouseMove(int x, int y)
 			return;
 		//selinfo.init
 		bSelFlag = true;
-		SkPoint point = ScrollViewToChildPoint(x, y);
+		
 		selinfo.end.y=  (point.y() + (-GetScrolloffsY())) / nLineHeight;
 		selinfo.end.y = std::max(0, selinfo.end.y);
 		selinfo.end.y = std::min(selinfo.end.y, (int)line.size()-1);
@@ -431,19 +433,20 @@ bool TextField::OnMouseDown(int x, int y)
 {
 	if (IsVisible() == false)
 		return false;
+	SkPoint point = ScrollViewToChildPoint(x, y);
 	if (vert_bar != NULL && vert_bar->IsVisible())
 	{
-        if (x >= vert_bar->GetBound().left() && x <= vert_bar->GetBound().right() && y >= vert_bar->GetBound().top() && y <= vert_bar->GetBound().bottom())
-            return vert_bar->OnMouseDown(x, y);
+        if (point.x() >= vert_bar->GetBound().left() && point.x() <= vert_bar->GetBound().right() && point.y() >= vert_bar->GetBound().top() && point.y() <= vert_bar->GetBound().bottom())
+            return vert_bar->OnMouseDown(point.x(), point.y());
     }
 
     if (hori_bar != NULL && hori_bar->IsVisible())
 	{
-        if (x >= hori_bar->GetBound().left() && x <= hori_bar->GetBound().right() && y >= hori_bar->GetBound().top() && y <= hori_bar->GetBound().bottom())
-            return hori_bar->OnMouseDown(x, y);
+        if (point.x() >= hori_bar->GetBound().left() && point.x() <= hori_bar->GetBound().right() && point.y() >= hori_bar->GetBound().top() && point.y() <= hori_bar->GetBound().bottom())
+            return hori_bar->OnMouseDown(point.x(), point.y());
     }
 
-    SkPoint point = ScrollViewToChildPoint(x, y);
+   // SkPoint point = ScrollViewToChildPoint(x, y);
 
     if (point.y() > line.size() * nLineHeight) return false;
 
@@ -491,16 +494,17 @@ bool TextField::OnMouseUp(int x, int y)
 		inspos.x=selinfo.end.x;
 		inspos.y = selinfo.end.y;
 	}*/
+	SkPoint point = ScrollViewToChildPoint(x, y);
 	SetMouseDragged(false);
    /* if (x < GetBound().left() || x > GetBound().right() || y < GetBound().top() ||y > GetBound().bottom())
         return ;*/
     if (vert_bar != NULL && vert_bar->IsVisible())
 	{
-        vert_bar->OnMouseUp(x, y);
+        vert_bar->OnMouseUp(point.x(), point.y());
     }
     if (hori_bar != NULL && hori_bar->IsVisible()) 
 	{
-        hori_bar->OnMouseUp(x, y);
+        hori_bar->OnMouseUp(point.x(), point.y());
     }
 	return false;
 	
@@ -512,7 +516,7 @@ void TextField::OnMouseWheel(float delta, uint32_t modifier)
 		return;
     if (vert_bar == NULL || !vert_bar->IsVisible()) 
 		return;
-    ScrollToPosition(vert_bar, GetScrolloffsY() + delta * 20);
+    ScrollToPosition(vert_bar, GetScrolloffsY() + delta * nLineHeight*2.3);
 }
 void TextField::PushCurUndeSelDel()
 {
@@ -1259,7 +1263,7 @@ SkScalar TextField::GetDisplayWidth()
 	SkScalar width = GetBound().width();
 	if (ContentInfo.height > GetBound().height() && vert_bar->IsVisible())
 		width -= vert_bar->GetWidth();
-	return width;
+	return width-nShowNumWidth;
 }
 SkScalar TextField::GetDisplayHeigth()
 {
@@ -1283,12 +1287,12 @@ void TextField::UpdateScrollBarInfo()
 	{
 		if (vert_bar->GetWidth() == 0)
 		{
-			vert_bar->SetPosition(GetBound().width() - BAR_VER_WIDTH + GetBound().left(), GetBound().top());
+			vert_bar->SetPosition(GetBound().width() - BAR_VER_WIDTH - nShowNumWidth/*+ GetBound().left()*/, /*GetBound().top()*/0);
 			vert_bar->SetSize(BAR_VER_WIDTH, GetDisplayHeigth());
 		}
 		else
 		{
-			vert_bar->SetPosition(GetBound().width() - vert_bar->GetBound().width() + GetBound().left(), GetBound().top());
+			vert_bar->SetPosition(GetBound().width() - vert_bar->GetBound().width()- nShowNumWidth /*+ GetBound().left()*/, /*GetBound().top()*/0);
 			vert_bar->SetSize(vert_bar->GetBound().width(), GetDisplayHeigth());
 		}
 
@@ -1311,12 +1315,12 @@ void TextField::UpdateScrollBarInfo()
 	{
 		if (hori_bar->GetWidth() == 0)
 		{
-			hori_bar->SetPosition(GetBound().left(), GetBound().bottom() - BAR_HORI_HEIGHT);
+			hori_bar->SetPosition(/*GetBound().left()*/0, GetBound().height() - BAR_HORI_HEIGHT/*GetBound().bottom() - BAR_HORI_HEIGHT*/);
 			hori_bar->SetSize(GetDisplayWidth(), BAR_HORI_HEIGHT);
 		}
 		else
 		{
-			hori_bar->SetPosition(GetBound().left(), GetBound().bottom() - hori_bar->GetBound().height());
+			hori_bar->SetPosition(/*GetBound().left()*/0, GetBound().height() - hori_bar->GetBound().height()/*GetBound().bottom() - hori_bar->GetBound().height()*/);
 			hori_bar->SetSize(GetDisplayWidth(), hori_bar->GetBound().height());
 		}
 		ScrollBarInfo barinfo;

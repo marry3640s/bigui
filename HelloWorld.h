@@ -96,7 +96,7 @@ private:
 	PopupMenu *popMenu;
 	SplitView *pSplit;
 	TabBar *pTab;
-
+	StatusBar *pStatusBar;
 	
 	
 };
